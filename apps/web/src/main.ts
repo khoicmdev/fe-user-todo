@@ -16,6 +16,9 @@ document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
     <div class="card">
       ${Counter()}
     </div>
+    <h1 class="text-3xl font-bold underline">
+      Hello world!  
+    </h1>
   </div>
 `;
 
