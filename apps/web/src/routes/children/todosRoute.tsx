@@ -1,7 +1,6 @@
 import { createRoute, Outlet } from "@tanstack/react-router";
 import { rootRoute } from "../rootRoute";
-import { TodosPage } from "@repo/todos/TodosPage";
-import { TodoDetail } from "@repo/todos/TodoDetail";
+import { TodosPage, TodoDetail } from "@repo/todos";
 
 // Feature parent route (/todos)
 export const todosRoute = createRoute({

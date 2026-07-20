@@ -1,7 +1,6 @@
 import { createRoute, Outlet } from "@tanstack/react-router";
 import { rootRoute } from "../rootRoute";
-import { UsersPage } from "@repo/users/UsersPage";
-import { UserDetail } from "@repo/users/UserDetail";
+import { UsersPage, UserDetail } from "@repo/users";
 
 // Feature parent route (/users)
 export const usersRoute = createRoute({

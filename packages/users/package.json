@@ -6,8 +6,7 @@
     "build": "tsc"
   },
   "exports": {
-    "./UsersPage": "./src/Users.tsx",
-    "./UserDetail": "./src/UserDetail.tsx"
+    ".": "./src/index.ts"
   },
   "devDependencies": {
     "@repo/typescript-config": "*",
