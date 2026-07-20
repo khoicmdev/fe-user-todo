@@ -1,4 +1,4 @@
-@import "@repo/tailwind-config";
+@import "@repo/shared/styles";
 
 :root {
   font-family: Inter, Avenir, Helvetica, Arial, sans-serif;

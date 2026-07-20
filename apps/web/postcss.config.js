@@ -1,2 +1,2 @@
-import { postcssConfig } from "@repo/tailwind-config/postcss";
+import { postcssConfig } from "@repo/shared/postcss";
 export default postcssConfig;
