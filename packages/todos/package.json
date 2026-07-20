@@ -6,7 +6,8 @@
     "build": "tsc"
   },
   "exports": {
-    "./TodosPage": "./src/index.tsx"
+    "./TodosPage": "./src/Todos.tsx",
+    "./TodoDetail": "./src/TodoDetail.tsx"
   },
   "devDependencies": {
     "@repo/typescript-config": "*",

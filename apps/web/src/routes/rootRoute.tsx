@@ -2,7 +2,7 @@ import { createRootRoute, Link, Outlet } from "@tanstack/react-router";
 
 export const rootRoute = createRootRoute({
   component: () => (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen p-6">
       {/* Shell Navigation */}
       <nav className="flex gap-4 border-b pb-4 mb-6 text-lg font-semibold">
         <Link to="/" className="[&.active]:font-bold [&.active]:text-blue-600">
