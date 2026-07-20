@@ -10,13 +10,21 @@
     "lint": "eslint \"src/**/*.ts\""
   },
   "dependencies": {
+    "@repo/todos": "*",
     "@repo/ui": "*",
-    "@repo/users": "*"
+    "@repo/users": "*",
+    "@tanstack/react-router": "^1.170.18",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7"
   },
   "devDependencies": {
     "@repo/eslint-config": "*",
     "@repo/shared": "*",
     "@repo/typescript-config": "*",
+    "@tanstack/router-plugin": "^1.168.23",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^4.7.0",
     "eslint": "^8.57.0",
     "typescript": "5.5.4",
     "vite": "^5.1.4"

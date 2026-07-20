@@ -5,8 +5,12 @@
     "dev": "tsc --watch",
     "build": "tsc"
   },
+  "exports": {
+    "./TodosPage": "./src/index.tsx"
+  },
   "devDependencies": {
     "@repo/typescript-config": "*",
+    "@types/react": "^19.2.17",
     "typescript": "latest"
   }
 }
