@@ -8,10 +8,20 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// --- SIMULATE REAL NETWORK DELAY (0.5s - 1.5s) ---
+app.use((req: Request, res: Response, next) => {
+  const delay = Math.floor(Math.random() * 1000) + 500; // 500ms to 1500ms
+  setTimeout(next, delay);
+});
+
 // --- ZOD SCHEMAS FOR VALIDATION ---
 
 export const createUserSchema = z.object({
-  username: z.string().trim().min(1, "Username is required"),
+  username: z
+    .string()
+    .trim()
+    .min(1, "Username is required")
+    .max(250, "Username cannot exceed 250 characters"),
   createdDate: z.string().optional(),
 });
 
@@ -114,26 +124,23 @@ app.post("/api/todos", (req: Request, res: Response) => {
       .json({ error: `User with id ${assigneeId} not found` });
   }
 
-  // Simulate network delay to test optimistic UI
-  setTimeout(() => {
-    // Randomly fail 20% of the time to demonstrate rollback works
-    if (Math.random() < 0.2) {
-      return res
-        .status(500)
-        .json({ error: "Simulated server error for rollback testing" });
-    }
+  // Randomly fail 20% of the time to demonstrate rollback works
+  if (Math.random() < 0.2) {
+    return res
+      .status(500)
+      .json({ error: "Simulated server error for rollback testing" });
+  }
 
-    const newTodo: ToDoItem = {
-      id: Date.now(),
-      title,
-      isCompleted: isCompleted ?? false,
-      assigneeId,
-      createdDate: createdDate || new Date().toISOString(),
-    };
+  const newTodo: ToDoItem = {
+    id: Date.now(),
+    title,
+    isCompleted: isCompleted ?? false,
+    assigneeId,
+    createdDate: createdDate || new Date().toISOString(),
+  };
 
-    todos.push(newTodo);
-    res.status(201).json(newTodo);
-  }, 1000);
+  todos.push(newTodo);
+  res.status(201).json(newTodo);
 });
 
 // PATCH /api/todos/:id - Update todo status / details

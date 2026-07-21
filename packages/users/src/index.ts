@@ -1,2 +1,2 @@
-export * from "./layout/Users";
+export * from "./layout/UsersPage";
 export * from "./layout/UserDetail";
