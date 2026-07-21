@@ -1,1 +1,5 @@
 @import "@repo/shared/styles";
+
+@source "../../../packages/ui/src";
+@source "../../../packages/todos/src";
+@source "../../../packages/users/src";
