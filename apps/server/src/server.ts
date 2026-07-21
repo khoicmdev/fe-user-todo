@@ -60,9 +60,21 @@ app.get("/api/status", (req: Request, res: Response) => {
 
 // --- USER ENDPOINTS ---
 
-// GET /api/users - Get all users with their todos
+// GET /api/users - Get paginated users with their todos
 app.get("/api/users", (req: Request, res: Response) => {
-  res.json(users.map(populateUser));
+  const pageIndex = Math.max(1, Number(req.query.pageIndex) || 1);
+  const pageSize = 10;
+  const startIndex = (pageIndex - 1) * pageSize;
+
+  const paginatedUsers = users
+    .slice(startIndex, startIndex + pageSize)
+    .map(populateUser);
+
+  res.json({
+    data: paginatedUsers,
+    total: users.length,
+    pageIndex,
+  });
 });
 
 // POST /api/users - Create a new user
@@ -80,7 +92,7 @@ app.post("/api/users", (req: Request, res: Response) => {
     todoItems: [],
   };
 
-  users.push(newUser);
+  users.unshift(newUser);
   res.status(201).json(newUser);
 });
 

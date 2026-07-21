@@ -1,34 +1,108 @@
-import { atomWithMutation } from "jotai-tanstack-query";
+import {
+  atomWithMutation,
+  atomWithInfiniteQuery,
+  queryClientAtom,
+} from "jotai-tanstack-query";
+import type { InfiniteData } from "@tanstack/react-query";
+import { toast } from "@repo/ui";
 import type { User } from "@repo/shared";
 import { API_BASE_URL } from "@repo/shared";
 
-/**
- * Mutation atom for POST /api/users.
- *
- * atomWithMutation returns a READ-ONLY atom — the `mutate` function is
- * embedded inside the atom value itself (result.mutate), not as the setter.
- * Use `useAtomValue(createUserMutationAtom)` in components to get full access
- * to: isPending, isError, isSuccess, data, error, reset, mutate.
- *
- * NOTE: onSuccess cache invalidation for ['users'] query key is deferred until
- * the user table is implemented with atomWithQuery — see Future Improvement
- * in implementation_plan.md.
- */
-export const createUserMutationAtom = atomWithMutation<User, string>(() => ({
-  mutationFn: async (username: string): Promise<User> => {
-    const res = await fetch(`${API_BASE_URL}/api/users`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username }),
-    });
+export const USERS_QUERY_KEY = ["users"] as const;
 
+export interface UsersResponse {
+  data: User[];
+  total: number;
+  pageIndex: number;
+}
+
+export const usersInfiniteQueryAtom = atomWithInfiniteQuery<UsersResponse>(() => ({
+  queryKey: USERS_QUERY_KEY,
+  queryFn: async ({ pageParam = 1 }) => {
+    const res = await fetch(`${API_BASE_URL}/api/users?pageIndex=${pageParam}`);
     if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      const fieldError = err?.error?.fieldErrors?.username?.[0];
-      const generalError = typeof err?.error === "string" ? err.error : null;
-      throw new Error(fieldError || generalError || "Failed to create user");
+      throw new Error("Failed to fetch users");
     }
-
-    return res.json() as Promise<User>;
+    return res.json() as Promise<UsersResponse>;
+  },
+  initialPageParam: 1,
+  getNextPageParam: (lastPage) => {
+    const totalPages = Math.ceil(lastPage.total / 10);
+    return lastPage.pageIndex < totalPages ? lastPage.pageIndex + 1 : undefined;
   },
 }));
+
+interface MutationContext {
+  previousData?: InfiniteData<UsersResponse>;
+}
+
+interface ServerErrorResponse {
+  error?: string | { fieldErrors?: { username?: string[] } };
+}
+
+export const createUserMutationAtom = atomWithMutation<
+  User,
+  string,
+  Error,
+  MutationContext
+>((get) => {
+  const client = get(queryClientAtom);
+
+  return {
+    mutationFn: async (username: string): Promise<User> => {
+      const res = await fetch(`${API_BASE_URL}/api/users`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username }),
+      });
+
+      if (!res.ok) {
+        const err = (await res.json().catch(() => ({}))) as ServerErrorResponse;
+        const fieldError =
+          typeof err?.error === "object" && err?.error?.fieldErrors?.username?.[0];
+        const generalError = typeof err?.error === "string" ? err.error : null;
+        throw new Error(fieldError || generalError || "Failed to create user");
+      }
+
+      return res.json() as Promise<User>;
+    },
+    onMutate: async (newUsername: string) => {
+      await client.cancelQueries({ queryKey: USERS_QUERY_KEY });
+      const previousData =
+        client.getQueryData<InfiniteData<UsersResponse>>(USERS_QUERY_KEY);
+
+      const optimisticUser: User = {
+        id: Date.now(),
+        username: newUsername,
+        todoItems: [],
+        createdDate: new Date().toISOString(),
+      };
+
+      client.setQueryData<InfiniteData<UsersResponse>>(
+        USERS_QUERY_KEY,
+        (old) => {
+          if (!old || !old.pages || old.pages.length === 0) return old;
+          const pages = [...old.pages];
+          pages[0] = {
+            ...pages[0],
+            data: [optimisticUser, ...pages[0].data],
+            total: (pages[0].total || 0) + 1,
+          };
+          return { ...old, pages };
+        }
+      );
+
+      return { previousData };
+    },
+    onError: (err: Error, _newUsername, context) => {
+      if (context?.previousData) {
+        client.setQueryData(USERS_QUERY_KEY, context.previousData);
+      }
+      toast.error(err.message || "Failed to create user");
+    },
+    onSuccess: (data) => {
+      client.invalidateQueries({ queryKey: USERS_QUERY_KEY });
+      toast.success(`User "${data.username}" created successfully!`);
+    },
+  };
+});

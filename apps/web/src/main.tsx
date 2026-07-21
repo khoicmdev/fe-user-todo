@@ -5,6 +5,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Provider } from "jotai";
 import { useHydrateAtoms } from "jotai/utils";
 import { queryClientAtom } from "jotai-tanstack-query";
+import { Toaster } from "@repo/ui";
 import { router } from "./routes/router-config";
 import { queryClient } from "./lib/query-client";
 import "./style.css";
@@ -26,6 +27,7 @@ if (rootElement && !rootElement.innerHTML) {
         <Provider>
           <HydrateAtoms>
             <RouterProvider router={router} />
+            <Toaster />
           </HydrateAtoms>
         </Provider>
       </QueryClientProvider>

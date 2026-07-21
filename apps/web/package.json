@@ -18,7 +18,8 @@
     "jotai": "^2.20.2",
     "jotai-tanstack-query": "^0.11.0",
     "react": "^19.2.7",
-    "react-dom": "^19.2.7"
+    "react-dom": "^19.2.7",
+    "sonner": "^2.0.7"
   },
   "devDependencies": {
     "@repo/eslint-config": "*",
