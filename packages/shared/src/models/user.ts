@@ -1,7 +1,8 @@
 import { ToDoItem } from "./todo";
 
 export interface User {
-  id: number;
-  todoItems: ToDoItem[];
+  id?: number;
   username: string;
+  todoItems?: ToDoItem[];
+  createdDate?: string;
 }

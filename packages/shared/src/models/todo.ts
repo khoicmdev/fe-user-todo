@@ -1,6 +1,7 @@
 export interface ToDoItem {
-  id: number;
+  id?: number;
   title: string;
-  isCompleted: boolean;
+  isCompleted?: boolean;
   assigneeId: number;
+  createdDate?: string;
 }

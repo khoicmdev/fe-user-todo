@@ -12,18 +12,21 @@ app.use(express.json());
 
 export const createUserSchema = z.object({
   username: z.string().trim().min(1, "Username is required"),
+  createdDate: z.string().optional(),
 });
 
 export const createTodoSchema = z.object({
   title: z.string().trim().min(1, "Title is required"),
   assigneeId: z.coerce.number().int(),
   isCompleted: z.boolean().optional().default(false),
+  createdDate: z.string().optional(),
 });
 
 export const updateTodoSchema = z.object({
   title: z.string().trim().min(1).optional(),
   isCompleted: z.boolean().optional(),
   assigneeId: z.coerce.number().optional(),
+  createdDate: z.string().optional(),
 });
 
 // --- IN-MEMORY DATA STORE (INITIALIZED FROM SEED) ---
@@ -59,10 +62,11 @@ app.post("/api/users", (req: Request, res: Response) => {
     return res.status(400).json({ error: parseResult.error.flatten() });
   }
 
-  const { username } = parseResult.data;
+  const { username, createdDate } = parseResult.data;
   const newUser: User = {
     id: Date.now(),
     username,
+    createdDate: createdDate || new Date().toISOString(),
     todoItems: [],
   };
 
@@ -101,7 +105,7 @@ app.post("/api/todos", (req: Request, res: Response) => {
     return res.status(400).json({ error: parseResult.error.flatten() });
   }
 
-  const { title, assigneeId, isCompleted } = parseResult.data;
+  const { title, assigneeId, isCompleted, createdDate } = parseResult.data;
 
   const userExists = users.some((u) => u.id === assigneeId);
   if (!userExists) {
@@ -122,8 +126,9 @@ app.post("/api/todos", (req: Request, res: Response) => {
     const newTodo: ToDoItem = {
       id: Date.now(),
       title,
-      isCompleted,
+      isCompleted: isCompleted ?? false,
       assigneeId,
+      createdDate: createdDate || new Date().toISOString(),
     };
 
     todos.push(newTodo);
@@ -145,10 +150,11 @@ app.patch("/api/todos/:id", (req: Request, res: Response) => {
     return res.status(400).json({ error: parseResult.error.flatten() });
   }
 
-  const { title, isCompleted, assigneeId } = parseResult.data;
+  const { title, isCompleted, assigneeId, createdDate } = parseResult.data;
 
   if (title !== undefined) todo.title = title;
   if (isCompleted !== undefined) todo.isCompleted = isCompleted;
+  if (createdDate !== undefined) todo.createdDate = createdDate;
   if (assigneeId !== undefined) {
     const userExists = users.some((u) => u.id === assigneeId);
     if (!userExists) {
