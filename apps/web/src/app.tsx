@@ -1,33 +1,19 @@
-import { Button } from "@repo/ui";
-import { createRootRoute, Link, Outlet } from "@tanstack/react-router";
-import { ArrowUpIcon } from "lucide-react"
+import { createRootRoute, Outlet } from "@tanstack/react-router";
+import { SideBar } from "./components/side-bar";
 
 export const rootRoute = createRootRoute({
   component: () => (
-    <div className="min-h-screen bg-neutral text-secondary font-sans p-6">
-      {/* Shell Navigation */}
-      <nav className="flex gap-4 border-b border-secondary/20 pb-4 mb-6 text-lg font-semibold">
-        <Link to="/" className="text-secondary/70 hover:text-primary [&.active]:font-bold [&.active]:text-primary">
-          Home
-        </Link>
-        <Link to="/users" className="text-secondary/70 hover:text-primary [&.active]:font-bold [&.active]:text-primary">
-          Users
-        </Link>
-        <Link to="/todos" className="text-secondary/70 hover:text-primary [&.active]:font-bold [&.active]:text-primary">
-          Todos
-        </Link>
-      </nav>
-      <div className="flex flex-wrap items-center gap-2 md:flex-row">
-        <Button variant="outline">Button</Button>
-        <Button variant="outline" size="icon" aria-label="Submit">
-          <ArrowUpIcon />
-        </Button>
-      </div>
+    <div className="min-h-screen bg-neutral text-secondary font-sans grid grid-cols-[240px_1fr]">
+      {/* SideBar Navigation */}
+      <SideBar />
 
-      {/* Render child routes */}
-      <main>
-        <Outlet />
+      {/* Main Outlet */}
+      <main className="flex flex-col items-center justify-start p-6 w-full overflow-y-auto">
+        <div className="w-full max-w-7xl flex flex-col items-center">
+          <Outlet />
+        </div>
       </main>
     </div>
   ),
 });
+
