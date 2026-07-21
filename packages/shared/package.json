@@ -3,8 +3,8 @@
   "version": "0.0.0",
   "type": "module",
   "exports": {
-    ".": "./dist/index.js",
-    "./styles": "./styles/shared-styles.css",
+    ".": "./src/index.ts",
+    "./styles": "./src/styles/shared-styles.css",
     "./postcss": "./postcss.config.js"
   },
   "scripts": {

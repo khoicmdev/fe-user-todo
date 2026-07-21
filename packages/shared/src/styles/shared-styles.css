@@ -1,0 +1,17 @@
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap');
+@import "tailwindcss";
+
+@theme {
+  /* Colors */
+  --color-primary: #6366f1;
+  --color-secondary: #475569;
+  --color-tertiary: #10b981;
+  --color-neutral: #f8fafc;
+
+  /* Typography */
+  --font-headline: Geist, sans-serif;
+  --font-body: Geist, sans-serif;
+  --font-label: "JetBrains Mono", monospace;
+  --font-sans: Geist, sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+}

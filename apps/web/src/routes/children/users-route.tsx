@@ -1,5 +1,5 @@
 import { createRoute, Outlet } from "@tanstack/react-router";
-import { rootRoute } from "../rootRoute";
+import { rootRoute } from "../../app";
 import { UsersPage, UserDetail } from "@repo/users";
 
 // Feature parent route (/users)

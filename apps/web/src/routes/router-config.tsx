@@ -1,8 +1,8 @@
 import { createRouter } from "@tanstack/react-router";
-import { rootRoute } from "./rootRoute";
-import { indexRoute } from "./children/indexRoute";
-import { usersRoute } from "./children/usersRoute";
-import { todosRoute } from "./children/todosRoute";
+import { rootRoute } from "../app";
+import { indexRoute } from "./children/index-route";
+import { usersRoute } from "./children/users-route";
+import { todosRoute } from "./children/todos-route";
 
 // rootRoute only has feature parent routes as top-level children
 const routeTree = rootRoute.addChildren([
