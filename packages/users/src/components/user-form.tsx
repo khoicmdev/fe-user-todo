@@ -1,73 +1,42 @@
-import React, { useState, useActionState } from "react";
+import { Button, Card, CardContent, CardHeader, CardTitle, Input, Label } from "@repo/ui";
+import { useAtomValue } from "jotai";
 import { UserPlus } from "lucide-react";
-import { Button, Input, Label, Card, CardHeader, CardTitle, CardContent } from "@repo/ui";
-import { useCreateUser } from "../hooks/use-create-user";
-
-interface FormState {
-  error: string | null;
-  success: boolean;
-  message?: string;
-}
-
-const initialState: FormState = {
-  error: null,
-  success: false,
-};
+import { ChangeEvent, SubmitEvent, useEffect, useState } from "react";
+import { createUserMutationAtom } from "../atoms/user-atoms";
 
 export function UserForm() {
+  // Username stays as local state — it's form-only, no other component needs it
   const [username, setUsername] = useState("");
-  const [isDismissed, setIsDismissed] = useState(false);
-  const { createUser } = useCreateUser();
 
-  const submitAction = async (
-    prevState: FormState,
-    formData: FormData
-  ): Promise<FormState> => {
-    const name = (formData.get("username") as string || "").trim();
+  // atomWithMutation returns a read-only atom.
+  // The atom value IS the mutation result object, which includes `mutate` and `reset`.
+  // We use useAtomValue (not useAtom) since there is no writable setter.
+  const { mutate, isPending, isError, isSuccess, error, reset } =
+    useAtomValue(createUserMutationAtom);
 
-    if (!name) {
-      return { error: "Username is required", success: false };
-    }
-    if (name.length > 250) {
-      return { error: "Username must not exceed 250 characters", success: false };
-    }
+  // Client-side validation — cheap & synchronous, no need for an atom
+  const trimmedUsername = username.trim();
+  const isOverLimit = username.length > 250;
+  const isValid = trimmedUsername.length > 0 && !isOverLimit;
 
-    try {
-      await createUser(name);
-      setUsername("");
-      return {
-        error: null,
-        success: true,
-        message: `User "${name}" created successfully!`,
-      };
-    } catch (err) {
-      if (err instanceof Error) {
-        return {
-          error: err?.message || "Failed to create user",
-          success: false,
-        };
-      } else {
-        console.error("An unknown error occurred", err);
-        throw err;
-      }
-    }
-  };
-
-  const [state, formAction, isPending] = useActionState(submitAction, initialState);
-
-  // Validation: required, non-empty, and max 250 chars
-  const trimmedLength = username.trim().length;
-  const isValid = trimmedLength > 0 && username.length <= 250;
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     setUsername(e.target.value);
-    setIsDismissed(true);
+    // Dismiss any previous success/error banner as soon as the user types again
+    if (isError || isSuccess) reset();
   };
 
-  const handleFormAction = (formData: FormData) => {
-    setIsDismissed(false);
-    formAction(formData);
+  const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!isValid || isPending) return;
+    mutate(trimmedUsername);
   };
+
+  // Clear the input field after a successful mutation
+  useEffect(() => {
+    if (isSuccess) {
+      setUsername("");
+    }
+  }, [isSuccess]);
 
   return (
     <Card className="w-full border-border/80 shadow-sm overflow-hidden py-0 gap-0">
@@ -81,7 +50,7 @@ export function UserForm() {
 
       {/* Card Content / Form */}
       <CardContent className="p-5">
-        <form action={handleFormAction} className="flex flex-col gap-5">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-5">
           <div className="flex flex-col gap-2">
             <Label htmlFor="username" className="text-xs font-medium text-slate-700">
               Username <span className="text-destructive">*</span>
@@ -93,23 +62,24 @@ export function UserForm() {
               value={username}
               onChange={handleInputChange}
               placeholder="e.g. j_smith_dev"
+              disabled={isPending}
             />
-            {username.length > 250 && (
-              <p className="text-xs text-destructive mt-1">
+            {isOverLimit && (
+              <p className="text-xs text-destructive">
                 Username cannot exceed 250 characters. (Current: {username.length})
               </p>
             )}
           </div>
 
-          {/* Feedback Messages */}
-          {!isDismissed && state.error && (
+          {/* Feedback Messages — driven by TanStack Query mutation status */}
+          {isError && error instanceof Error && (
             <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-xs text-destructive font-medium">
-              {state.error}
+              {error.message}
             </div>
           )}
-          {!isDismissed && state.success && (
+          {isSuccess && (
             <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-xs text-emerald-700 font-medium">
-              {state.message}
+              User created successfully!
             </div>
           )}
 

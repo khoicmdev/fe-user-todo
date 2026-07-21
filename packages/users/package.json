@@ -11,6 +11,9 @@
   "dependencies": {
     "@repo/shared": "*",
     "@repo/ui": "*",
+    "@tanstack/react-query": "^5.101.4",
+    "jotai": "^2.20.2",
+    "jotai-tanstack-query": "^0.11.0",
     "lucide-react": "^1.25.0"
   },
   "devDependencies": {

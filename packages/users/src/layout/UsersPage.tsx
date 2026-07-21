@@ -1,4 +1,3 @@
-import React from "react";
 import { UserForm } from "../components/user-form";
 import { UserTable } from "../components/user-table";
 
