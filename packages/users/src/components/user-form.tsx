@@ -1,42 +1,19 @@
 import { Button, Card, CardContent, CardHeader, CardTitle, Input, Label } from "@repo/ui";
-import { useAtomValue } from "jotai";
 import { UserPlus } from "lucide-react";
-import { ChangeEvent, SubmitEvent, useEffect, useState } from "react";
-import { createUserMutationAtom } from "../atoms/user-atoms";
+import { useUserForm } from "./use-user-form";
 
 export function UserForm() {
-  // Username stays as local state — it's form-only, no other component needs it
-  const [username, setUsername] = useState("");
-
-  // atomWithMutation returns a read-only atom.
-  // The atom value IS the mutation result object, which includes `mutate` and `reset`.
-  // We use useAtomValue (not useAtom) since there is no writable setter.
-  const { mutate, isPending, isError, isSuccess, error, reset } =
-    useAtomValue(createUserMutationAtom);
-
-  // Client-side validation — cheap & synchronous, no need for an atom
-  const trimmedUsername = username.trim();
-  const isOverLimit = username.length > 250;
-  const isValid = trimmedUsername.length > 0 && !isOverLimit;
-
-  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setUsername(e.target.value);
-    // Dismiss any previous success/error banner as soon as the user types again
-    if (isError || isSuccess) reset();
-  };
-
-  const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (!isValid || isPending) return;
-    mutate(trimmedUsername);
-  };
-
-  // Clear the input field after a successful mutation
-  useEffect(() => {
-    if (isSuccess) {
-      setUsername("");
-    }
-  }, [isSuccess]);
+  const {
+    username,
+    isPending,
+    isError,
+    isSuccess,
+    error,
+    isOverLimit,
+    isValid,
+    handleInputChange,
+    handleSubmit,
+  } = useUserForm();
 
   return (
     <Card className="w-full border-border/80 shadow-sm overflow-hidden py-0 gap-0">
