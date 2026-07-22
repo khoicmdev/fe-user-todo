@@ -1,6 +1,6 @@
 import { Button, Card, CardContent, CardHeader, CardTitle, Input, Label } from "@repo/ui";
 import { UserPlus } from "lucide-react";
-import { useUserForm } from "./use-user-form";
+import { useUserForm } from "../hooks/use-user-form";
 
 export function UserForm() {
   const {
