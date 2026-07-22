@@ -2,7 +2,7 @@ import { atomWithMutation, queryClientAtom } from "jotai-tanstack-query";
 import type { InfiniteData } from "@tanstack/react-query";
 import { toast } from "@repo/ui";
 import type { User } from "@repo/shared";
-import { API_BASE_URL } from "@repo/shared";
+import { API_BASE_URL, JSON_HEADERS } from "@repo/shared";
 import { USERS_QUERY_KEY, type UsersResponse } from "./user-queries";
 
 interface MutationContext {
@@ -25,7 +25,7 @@ export const createUserMutationAtom = atomWithMutation<
     mutationFn: async (username: string): Promise<User> => {
       const res = await fetch(`${API_BASE_URL}/api/users`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: JSON_HEADERS,
         body: JSON.stringify({ username }),
       });
 

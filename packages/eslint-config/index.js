@@ -38,30 +38,29 @@ module.exports = {
   },
   rules: {
     "@typescript-eslint/no-non-null-assertion": "off",
-    "no-restricted-imports": [
-      "error",
-      {
-        patterns: [
-          {
-            group: ["@repo/todos", "@repo/todos/*"],
-            message:
-              "Cross-feature import error: Feature packages cannot import directly from @repo/todos. Shared components must be placed in @repo/ui or @repo/shared.",
-          },
-          {
-            group: ["@repo/users", "@repo/users/*"],
-            message:
-              "Cross-feature import error: Feature packages cannot import directly from @repo/users. Shared components must be placed in @repo/ui or @repo/shared.",
-          },
-        ],
-      },
-    ],
   },
   overrides: [
     {
-      // Allow apps to import feature packages
-      files: ["apps/**/*", "**/apps/**/*"],
+      // Restrict cross-feature imports ONLY inside packages (features & libraries)
+      files: ["packages/**/*", "**/packages/**/*"],
       rules: {
-        "no-restricted-imports": "off",
+        "no-restricted-imports": [
+          "error",
+          {
+            patterns: [
+              {
+                group: ["@repo/todos", "@repo/todos/*"],
+                message:
+                  "Cross-feature import error: Feature packages cannot import directly from @repo/todos. Shared components must be placed in @repo/ui or @repo/shared.",
+              },
+              {
+                group: ["@repo/users", "@repo/users/*"],
+                message:
+                  "Cross-feature import error: Feature packages cannot import directly from @repo/users. Shared components must be placed in @repo/ui or @repo/shared.",
+              },
+            ],
+          },
+        ],
       },
     },
   ],
