@@ -11,6 +11,7 @@ export * from "./src/components/ui/popover";
 export * from "./src/components/ui/command";
 export * from "./src/components/ui/dialog";
 export * from "./src/components/ui/combobox";
+export * from "./src/components/ui/checkbox";
 export * from "./src/components/ui/sonner";
 
 // Utilities

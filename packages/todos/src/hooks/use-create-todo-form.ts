@@ -1,6 +1,6 @@
 import { useAtomValue } from "jotai";
 import { ChangeEvent, FormEvent, useEffect, useState } from "react";
-import { createTodoMutationAtom } from "../atoms/todo-atoms";
+import { createTodoMutationAtom } from "../atoms/todo-mutations";
 
 export interface UseCreateTodoFormOptions {
   fixedAssigneeId?: number;

@@ -1,4 +1,4 @@
-import { atomWithInfiniteQuery } from "jotai-tanstack-query";
+import { atomWithInfiniteQuery, atomWithQuery } from "jotai-tanstack-query";
 import type { User } from "@repo/shared";
 import { API_BASE_URL } from "@repo/shared";
 
@@ -25,3 +25,15 @@ export const usersInfiniteQueryAtom = atomWithInfiniteQuery<UsersResponse>(() =>
     return lastPage.pageIndex < totalPages ? lastPage.pageIndex + 1 : undefined;
   },
 }));
+
+export function createUserDetailQueryAtom(userId: number) {
+  return atomWithQuery<User>(() => ({
+    queryKey: [...USERS_QUERY_KEY, userId],
+    queryFn: async () => {
+      const res = await fetch(`${API_BASE_URL}/api/users/${userId}`);
+      if (!res.ok) throw new Error("Failed to fetch user details");
+      return res.json() as Promise<User>;
+    },
+  }));
+}
+

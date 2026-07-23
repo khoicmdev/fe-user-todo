@@ -25,6 +25,18 @@ export const createUserSchema = z.object({
   createdDate: z.string().optional(),
 });
 
+export const updateUserSchema = z.object({
+  username: z.string().trim().min(1).max(250).optional(),
+  todoUpdates: z
+    .array(
+      z.object({
+        id: z.number().int(),
+        isCompleted: z.boolean(),
+      }),
+    )
+    .optional(),
+});
+
 export const createTodoSchema = z.object({
   title: z.string().trim().min(1, "Title is required"),
   assigneeId: z.coerce.number().int(),
@@ -105,19 +117,58 @@ app.get("/api/users/:id", (req: Request, res: Response) => {
   res.json(populateUser(user));
 });
 
-// --- TODO ENDPOINTS ---
+// PATCH /api/users/:id - Update user username and/or todo statuses
+app.patch("/api/users/:id", (req: Request, res: Response) => {
+  const userId = Number(req.params.id);
+  const user = users.find((u) => u.id === userId);
+  if (!user) return res.status(404).json({ error: "User not found" });
 
-// GET /api/todos - Get todos (optionally filter by userId or assigneeId)
-app.get("/api/todos", (req: Request, res: Response) => {
-  const userIdQuery = req.query.userId || req.query.assigneeId;
-
-  if (userIdQuery) {
-    const userId = Number(userIdQuery);
-    const userTodos = todos.filter((t) => t.assigneeId === userId);
-    return res.json(userTodos);
+  const parseResult = updateUserSchema.safeParse(req.body);
+  if (!parseResult.success) {
+    return res.status(400).json({ error: parseResult.error.flatten() });
   }
 
-  res.json(todos);
+  const { username, todoUpdates } = parseResult.data;
+
+  // Update username if provided
+  if (username !== undefined) {
+    user.username = username;
+  }
+
+  // Batch-update todo isCompleted statuses if provided
+  if (todoUpdates && todoUpdates.length > 0) {
+    for (const update of todoUpdates) {
+      const todo = todos.find((t) => t.id === update.id);
+      if (todo) {
+        todo.isCompleted = update.isCompleted;
+      }
+    }
+  }
+
+  res.json(populateUser(user));
+});
+
+// --- TODO ENDPOINTS ---
+
+const TODO_PAGE_SIZE = 10;
+
+// GET /api/todos - Get paginated todos (optionally filter by userId/assigneeId)
+app.get("/api/todos", (req: Request, res: Response) => {
+  const pageIndex = Math.max(1, Number(req.query.pageIndex) || 1);
+  const userIdQuery = req.query.userId || req.query.assigneeId;
+
+  const filtered = userIdQuery
+    ? todos.filter((t) => t.assigneeId === Number(userIdQuery))
+    : todos;
+
+  const startIndex = (pageIndex - 1) * TODO_PAGE_SIZE;
+  const paginated = filtered.slice(startIndex, startIndex + TODO_PAGE_SIZE);
+
+  res.json({
+    data: paginated,
+    total: filtered.length,
+    pageIndex,
+  });
 });
 
 // POST /api/todos - Create a new todo
@@ -155,7 +206,7 @@ app.post("/api/todos", (req: Request, res: Response) => {
   res.status(201).json(newTodo);
 });
 
-// PATCH /api/todos/:id - Update todo status / details
+// PATCH /api/todos/:id - Update a single todo
 app.patch("/api/todos/:id", (req: Request, res: Response) => {
   const todoId = Number(req.params.id);
   const todo = todos.find((t) => t.id === todoId);
@@ -202,5 +253,9 @@ app.delete("/api/todos/:id", (req: Request, res: Response) => {
 
 const PORT = 3001;
 app.listen(PORT, () => {
-  console.log(`Mock API running on http://localhost:${PORT}`);
+  console.log(
+    `       \nExpressJS started at ${new Date().toLocaleDateString()} - ${new Date().toLocaleTimeString()}\n`,
+    `\nInitial with seed data at "apps/server/src/seed.ts"`,
+  );
+  console.log(`       -> Local: http://localhost:${PORT}\n`);
 });

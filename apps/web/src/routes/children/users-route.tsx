@@ -1,7 +1,13 @@
 import { createRoute, Outlet } from "@tanstack/react-router";
 import { rootRoute } from "../../app";
-import { UsersPage, UserDetail } from "@repo/users";
-import { CreateTodoForm } from "@repo/todos";
+import { UserDetail, UsersPage, updateUserMutationAtom } from "@repo/users";
+import {
+  CreateTodoForm,
+  TodoTable,
+  TodoStatusEditProvider,
+  useTodoStatusEdit,
+} from "@repo/todos";
+import { useAtomValue } from "jotai";
 
 // Feature parent route (/users)
 export const usersRoute = createRoute({
@@ -17,17 +23,43 @@ export const usersIndexRoute = createRoute({
   component: UsersPage,
 });
 
-// Detail route wrapper component using Slot Composition
+// Detail route wrapper component using Slot Composition + Context Bridge
 function UserDetailRouteComponent() {
   const { id } = userDetailRoute.useParams();
   const userId = Number(id);
 
-  return (
-    <UserDetail
-      createTodoFormSlot={
-        <CreateTodoForm fixedAssigneeId={userId} />
+  // useTodoStatusEdit is created here (composition root) and provided via context.
+  // TodoTable (mode="user") reads/writes the context.
+  // This component reads it to build the save payload — keeping atoms in their packages.
+  const todoStatusEdit = useTodoStatusEdit();
+
+  const { mutate: updateUser, isPending: isSaving } =
+    useAtomValue(updateUserMutationAtom);
+
+  const handleSave = (username: string) => {
+    updateUser(
+      {
+        userId,
+        username,
+        todoUpdates: todoStatusEdit.buildPayload(),
+      },
+      {
+        onSuccess: () => todoStatusEdit.reset(),
       }
-    />
+    );
+  };
+
+  return (
+    // Provide the context so TodoTable (mode="user") can read/write checkbox state
+    <TodoStatusEditProvider value={todoStatusEdit}>
+      <UserDetail
+        createTodoFormSlot={<CreateTodoForm fixedAssigneeId={userId} />}
+        todoTableSlot={<TodoTable mode="user" userId={userId} />}
+        hasTodoChanges={todoStatusEdit.hasChanges}
+        isSaving={isSaving}
+        onSave={handleSave}
+      />
+    </TodoStatusEditProvider>
   );
 }
 

@@ -79,3 +79,47 @@ export const createUserMutationAtom = atomWithMutation<
     },
   };
 });
+
+// --- Update user mutation (username + optional todo status batch update) ---
+
+export interface UpdateUserInput {
+  userId: number;
+  username?: string;
+  todoUpdates?: { id: number; isCompleted: boolean }[];
+}
+
+export const updateUserMutationAtom = atomWithMutation<
+  User,
+  UpdateUserInput,
+  Error
+>((get) => {
+  const client = get(queryClientAtom);
+
+  return {
+    mutationFn: async ({ userId, username, todoUpdates }: UpdateUserInput): Promise<User> => {
+      const res = await fetch(`${API_BASE_URL}/api/users/${userId}`, {
+        method: "PATCH",
+        headers: JSON_HEADERS,
+        body: JSON.stringify({ username, todoUpdates }),
+      });
+
+      if (!res.ok) {
+        const err = (await res.json().catch(() => ({}))) as ServerErrorResponse;
+        const generalError = typeof err?.error === "string" ? err.error : null;
+        throw new Error(generalError || "Failed to update user");
+      }
+
+      return res.json() as Promise<User>;
+    },
+    onSuccess: (data, { userId }) => {
+      // Invalidate user list, the specific user detail, and todos cache
+      client.invalidateQueries({ queryKey: USERS_QUERY_KEY });
+      client.invalidateQueries({ queryKey: [...USERS_QUERY_KEY, userId] });
+      client.invalidateQueries({ queryKey: ["todos"] });
+      toast.success(`Saved changes for "${data.username}"`);
+    },
+    onError: (err: Error) => {
+      toast.error(err.message || "Failed to save changes");
+    },
+  };
+});
