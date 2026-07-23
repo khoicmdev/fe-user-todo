@@ -3,7 +3,6 @@ export * from "./layout/TodoDetail";
 export * from "./components/create-todo-form";
 export * from "./components/user-select-combobox";
 export * from "./components/todo-table";
-export * from "./components/todo-table-view";
 export * from "./hooks/use-create-todo-form";
 export * from "./hooks/use-user-select-infinite";
 export * from "./hooks/use-todo-status-edit";
