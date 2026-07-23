@@ -1,5 +1,6 @@
 import { useRef, useEffect } from "react";
 import { useAtom } from "jotai";
+import { useNavigate } from "@tanstack/react-router";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { usersInfiniteQueryAtom } from "../atoms/user-atoms";
 import { UserTableView } from "./user-table-view";
@@ -12,6 +13,7 @@ const ROW_HEIGHT = 56;
  * and page fetching side effects, passing state down to UserTableView.
  */
 export function UserTable() {
+  const navigate = useNavigate();
   const [queryResult] = useAtom(usersInfiniteQueryAtom);
   const {
     data,
@@ -57,6 +59,10 @@ export function UserTable() {
     }
   }, [virtualItems, users.length, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
+  const handleUserClick = (userId: number) => {
+    navigate({ to: "/users/$id", params: { id: String(userId) } });
+  };
+
   return (
     <UserTableView
       users={users}
@@ -69,6 +75,7 @@ export function UserTable() {
       isError={isError}
       errorMessage={error?.message}
       isFetchingNextPage={isFetchingNextPage}
+      onUserClick={handleUserClick}
     />
   );
 }

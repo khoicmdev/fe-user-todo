@@ -1,6 +1,9 @@
 import { useParams } from "@tanstack/react-router";
 import { useAtomValue } from "jotai";
-import { useState, useEffect, type ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import {
   Button,
   Input,
@@ -8,6 +11,16 @@ import {
 } from "@repo/ui";
 import { Save } from "lucide-react";
 import { createUserDetailQueryAtom } from "../atoms/user-queries";
+
+const userDetailSchema = z.object({
+  username: z
+    .string()
+    .trim()
+    .min(1, "Username is required.")
+    .max(250, "Username cannot exceed 250 characters."),
+});
+
+type UserDetailFormValues = z.infer<typeof userDetailSchema>;
 
 export interface UserDetailProps {
   createTodoFormSlot?: ReactNode;
@@ -29,14 +42,25 @@ export function UserDetail({
 
   const userQueryAtom = createUserDetailQueryAtom(userId);
   const { data: user, isLoading, error } = useAtomValue(userQueryAtom);
-  const [usernameInput, setUsernameInput] = useState("");
-  const [isEditing, setIsEditing] = useState(false);
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isDirty, isValid },
+  } = useForm<UserDetailFormValues>({
+    resolver: zodResolver(userDetailSchema),
+    mode: "onChange",
+    defaultValues: {
+      username: "",
+    },
+  });
 
   useEffect(() => {
     if (user) {
-      setUsernameInput(user.username);
+      reset({ username: user.username });
     }
-  }, [user]);
+  }, [user, reset]);
 
   if (isLoading) {
     return (
@@ -55,16 +79,17 @@ export function UserDetail({
     );
   }
 
-  const hasUsernameChange = usernameInput !== user.username;
-  const hasPendingChanges = hasUsernameChange || hasTodoChanges;
+  const hasPendingChanges = (isDirty || hasTodoChanges) && isValid;
 
-  const handleSave = () => {
-    onSave?.(usernameInput);
-    setIsEditing(false);
+  const onSubmit = (data: UserDetailFormValues) => {
+    onSave?.(data.username);
   };
 
   return (
-    <div className="w-full min-h-screen bg-slate-50 p-6 flex flex-col gap-6">
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      className="w-full min-h-screen bg-slate-50 p-6 flex flex-col gap-6"
+    >
       {/* Top Metadata Bar */}
       <div className="flex items-center gap-4 text-xs font-mono text-slate-500">
         <span className="px-2.5 py-1 bg-indigo-50 text-indigo-700 font-semibold rounded-md border border-indigo-100">
@@ -75,30 +100,29 @@ export function UserDetail({
 
       {/* User Header & Edit Bar */}
       <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <h1 className="text-2xl font-bold text-slate-800 tracking-tight">User:</h1>
-          {isEditing ? (
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-4">
+            <h1 className="text-2xl font-bold text-slate-800 tracking-tight">User:</h1>
             <Input
-              value={usernameInput}
-              onChange={(e) => setUsernameInput(e.target.value)}
-              className="h-10 text-lg font-medium bg-white w-64 border-indigo-400 focus:ring-2 focus:ring-indigo-500"
-              autoFocus
+              {...register("username")}
+              maxLength={250}
+              placeholder="Enter username..."
+              className={`h-10 text-lg font-medium bg-white w-64 border-indigo-400 focus:ring-2 focus:ring-indigo-500 ${
+                errors.username ? "border-destructive focus:ring-destructive" : ""
+              }`}
             />
-          ) : (
-            <span
-              onClick={() => setIsEditing(true)}
-              title="Click to edit"
-              className="text-2xl font-semibold text-slate-800 cursor-pointer hover:text-indigo-600 transition-colors"
-            >
-              {user.username}
+          </div>
+          {errors.username && (
+            <span className="text-xs text-destructive font-medium pl-[88px]">
+              {errors.username.message}
             </span>
           )}
         </div>
 
         {/* Single Save button — saves username + todo changes together */}
         <Button
-          onClick={handleSave}
-          disabled={!hasPendingChanges || isSaving}
+          type="submit"
+          disabled={!hasPendingChanges || !isValid || isSaving}
           className="gap-2 bg-indigo-600 hover:bg-indigo-700 text-white"
         >
           {isSaving ? (
@@ -135,6 +159,6 @@ export function UserDetail({
           )}
         </div>
       </div>
-    </div>
+    </form>
   );
 }

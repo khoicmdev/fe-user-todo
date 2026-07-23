@@ -26,6 +26,7 @@ export interface UserTableViewProps {
   isError: boolean;
   errorMessage?: string;
   isFetchingNextPage: boolean;
+  onUserClick?: (userId: number) => void;
 }
 
 export function UserTableView({
@@ -39,6 +40,7 @@ export function UserTableView({
   isError,
   errorMessage,
   isFetchingNextPage,
+  onUserClick,
 }: UserTableViewProps) {
   return (
     <Card className="w-full border-border/80 shadow-sm overflow-hidden py-0 gap-0">
@@ -101,7 +103,8 @@ export function UserTableView({
                   return (
                     <TableRow
                       key={user.id ?? virtualRow.index}
-                      className="h-[56px] border-b border-slate-100 hover:bg-slate-50/60 transition-colors"
+                      onClick={() => user.id !== undefined && onUserClick?.(user.id)}
+                      className="h-[56px] border-b border-slate-100 hover:bg-slate-100/80 transition-colors cursor-pointer"
                     >
                       <TableCell className="w-[140px] px-5 font-mono text-sm font-medium text-indigo-600">
                         {user.id}
