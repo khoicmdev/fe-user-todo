@@ -1,4 +1,4 @@
-import { useParams } from "@tanstack/react-router";
+import { useParams, useNavigate } from "@tanstack/react-router";
 import { useAtomValue } from "jotai";
 import { useEffect, type ReactNode } from "react";
 import { useForm } from "react-hook-form";
@@ -9,7 +9,7 @@ import {
   Input,
   Spinner,
 } from "@repo/ui";
-import { Save } from "lucide-react";
+import { Save, X } from "lucide-react";
 import { createUserDetailQueryAtom } from "../atoms/user-queries";
 
 const userDetailSchema = z.object({
@@ -39,6 +39,7 @@ export function UserDetail({
 }: UserDetailProps) {
   const params = useParams({ from: "/users/$id" });
   const userId = Number(params.id);
+  const navigate = useNavigate();
 
   const userQueryAtom = createUserDetailQueryAtom(userId);
   const { data: user, isLoading, error } = useAtomValue(userQueryAtom);
@@ -119,24 +120,35 @@ export function UserDetail({
           )}
         </div>
 
-        {/* Single Save button — saves username + todo changes together */}
-        <Button
-          type="submit"
-          disabled={!hasPendingChanges || !isValid || isSaving}
-          className="gap-2 bg-indigo-600 hover:bg-indigo-700 text-white"
-        >
-          {isSaving ? (
-            <>
-              <Spinner className="w-4 h-4" />
-              Saving...
-            </>
-          ) : (
-            <>
-              <Save className="w-4 h-4" />
-              Save{hasTodoChanges ? " Changes" : ""}
-            </>
-          )}
-        </Button>
+        {/* Action buttons */}
+        <div className="flex items-center gap-3">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => navigate({ to: "/users" })}
+            className="gap-2 text-slate-600 border-slate-300 hover:bg-slate-50"
+          >
+            <X className="w-4 h-4" />
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            disabled={!hasPendingChanges || !isValid || isSaving}
+            className="gap-2 bg-indigo-600 hover:bg-indigo-700 text-white"
+          >
+            {isSaving ? (
+              <>
+                <Spinner className="w-4 h-4" />
+                Saving...
+              </>
+            ) : (
+              <>
+                <Save className="w-4 h-4" />
+                Save{hasTodoChanges ? " Changes" : ""}
+              </>
+            )}
+          </Button>
+        </div>
       </div>
 
       {/* Main Grid: Left Slot (Add ToDo) + Right Assignments Table */}

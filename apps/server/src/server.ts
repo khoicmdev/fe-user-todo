@@ -171,6 +171,18 @@ app.get("/api/todos", (req: Request, res: Response) => {
   });
 });
 
+// GET /api/todos/:id - Get a single todo by ID
+app.get("/api/todos/:id", (req: Request, res: Response) => {
+  const todoId = Number(req.params.id);
+  const todo = todos.find((t) => t.id === todoId);
+
+  if (!todo) {
+    return res.status(404).json({ error: "Todo not found" });
+  }
+
+  res.json(todo);
+});
+
 // POST /api/todos - Create a new todo
 app.post("/api/todos", (req: Request, res: Response) => {
   const parseResult = createTodoSchema.safeParse(req.body);

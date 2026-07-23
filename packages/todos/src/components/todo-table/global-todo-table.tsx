@@ -1,12 +1,14 @@
 import { useRef, useEffect } from "react";
 import { useAtomValue } from "jotai";
 import { useVirtualizer } from "@tanstack/react-virtual";
+import { useNavigate } from "@tanstack/react-router";
 import { todosInfiniteQueryAtom } from "../../atoms/todo-queries";
 import { useUserSelectInfinite } from "../../hooks/use-user-select-infinite";
 import { TodoTableView } from "./todo-table-view";
 import { ROW_HEIGHT } from "./constants";
 
 export function GlobalTodoTable() {
+  const navigate = useNavigate();
   const {
     data,
     fetchNextPage,
@@ -63,6 +65,7 @@ export function GlobalTodoTable() {
       errorMessage={error?.message}
       isFetchingNextPage={isFetchingNextPage}
       usersMap={usersMap}
+      onRowClick={(id) => navigate({ to: "/todos/$id", params: { id: String(id) } })}
     />
   );
 }

@@ -1,4 +1,5 @@
 import { useRef, useEffect } from "react";
+import { useNavigate } from "@tanstack/react-router";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import type { ToDoItem } from "@repo/shared";
 import { useTodoStatusEditContext } from "../../context/todo-status-edit-context";
@@ -27,6 +28,7 @@ export function UserTodoTable({
   isError,
   errorMessage,
 }: UserTodoTableProps) {
+  const navigate = useNavigate();
   const { pendingChanges, toggleTodo } = useTodoStatusEditContext();
 
   const parentRef = useRef<HTMLDivElement>(null);
@@ -67,6 +69,7 @@ export function UserTodoTable({
       isFetchingNextPage={isFetchingNextPage}
       pendingChanges={pendingChanges}
       onToggle={toggleTodo}
+      onRowClick={(id) => navigate({ to: "/todos/$id", params: { id: String(id) } })}
     />
   );
 }

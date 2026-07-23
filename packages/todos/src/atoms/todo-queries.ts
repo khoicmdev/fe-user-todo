@@ -1,4 +1,4 @@
-import { atomWithInfiniteQuery } from "jotai-tanstack-query";
+import { atomWithInfiniteQuery, atomWithQuery } from "jotai-tanstack-query";
 import type { ToDoItem } from "@repo/shared";
 import { API_BASE_URL } from "@repo/shared";
 
@@ -42,6 +42,18 @@ export function createUserTodosQueryAtom(userId: number) {
     getNextPageParam: (lastPage) => {
       const totalPages = Math.ceil(lastPage.total / TODO_PAGE_SIZE);
       return lastPage.pageIndex < totalPages ? lastPage.pageIndex + 1 : undefined;
+    },
+  }));
+}
+
+// --- Single todo detail query factory (for TodoDetail page) ---
+export function createTodoDetailQueryAtom(todoId: number) {
+  return atomWithQuery<ToDoItem>(() => ({
+    queryKey: [...TODOS_QUERY_KEY, todoId],
+    queryFn: async () => {
+      const res = await fetch(`${API_BASE_URL}/api/todos/${todoId}`);
+      if (!res.ok) throw new Error("Failed to fetch todo details");
+      return res.json() as Promise<ToDoItem>;
     },
   }));
 }

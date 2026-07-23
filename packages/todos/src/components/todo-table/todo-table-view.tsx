@@ -35,6 +35,7 @@ export interface TodoTableViewProps {
   // User mode only
   pendingChanges?: Record<number, boolean>;
   onToggle?: (id: number, serverIsCompleted: boolean) => void;
+  onRowClick?: (todoId: number) => void;
 }
 
 export function TodoTableView({
@@ -52,6 +53,7 @@ export function TodoTableView({
   usersMap,
   pendingChanges = {},
   onToggle,
+  onRowClick,
 }: TodoTableViewProps) {
   const colSpan = COL_SPAN[mode];
 
@@ -131,7 +133,12 @@ export function TodoTableView({
                   return (
                     <TableRow
                       key={todo.id}
-                      className="h-[56px] border-b border-slate-100 hover:bg-slate-50/60 transition-colors"
+                      onClick={() => onRowClick?.(todo.id!)}
+                      className={`h-[56px] border-b border-slate-100 transition-colors ${
+                        onRowClick
+                          ? "hover:bg-slate-100/80 cursor-pointer"
+                          : "hover:bg-slate-50/60"
+                      }`}
                     >
                       {/* ID */}
                       <TableCell className="w-16 px-4 font-mono text-sm text-slate-500">
@@ -183,6 +190,7 @@ export function TodoTableView({
                             onCheckedChange={() =>
                               onToggle?.(todo.id!, serverIsCompleted)
                             }
+                            onClick={(e) => e.stopPropagation()}
                             className="cursor-pointer"
                           />
                         </TableCell>

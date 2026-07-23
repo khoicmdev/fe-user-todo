@@ -13,8 +13,14 @@
     "@repo/shared": "*",
     "@repo/ui": "*",
     "@tanstack/react-query": "^5.101.4",
+    "@tanstack/react-router": "^1.170.18",
+    "@tanstack/react-virtual": "^3.14.7",
+    "@hookform/resolvers": "^5.4.0",
     "jotai": "^2.20.2",
-    "lucide-react": "^1.25.0"
+    "jotai-tanstack-query": "^0.11.0",
+    "lucide-react": "^1.25.0",
+    "react-hook-form": "^7.82.0",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@repo/eslint-config": "*",

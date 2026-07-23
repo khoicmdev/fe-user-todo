@@ -41,3 +41,46 @@ export const createTodoMutationAtom = atomWithMutation<
     },
   };
 });
+
+// --- Update todo mutation (title + isCompleted) ---
+
+export interface UpdateTodoInput {
+  todoId: number;
+  title?: string;
+  isCompleted?: boolean;
+}
+
+export const updateTodoMutationAtom = atomWithMutation<
+  ToDoItem,
+  UpdateTodoInput,
+  Error
+>((get) => {
+  const client = get(queryClientAtom);
+
+  return {
+    mutationFn: async ({ todoId, title, isCompleted }: UpdateTodoInput): Promise<ToDoItem> => {
+      const res = await fetch(`${API_BASE_URL}/api/todos/${todoId}`, {
+        method: "PATCH",
+        headers: JSON_HEADERS,
+        body: JSON.stringify({ title, isCompleted }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        const message = typeof err?.error === "string" ? err.error : "Failed to update task";
+        throw new Error(message);
+      }
+
+      return res.json() as Promise<ToDoItem>;
+    },
+    onSuccess: (data, { todoId }) => {
+      client.invalidateQueries({ queryKey: TODOS_QUERY_KEY });
+      client.invalidateQueries({ queryKey: [...TODOS_QUERY_KEY, todoId] });
+      client.invalidateQueries({ queryKey: ["users"] });
+      toast.success(`Task "${data.title}" updated successfully!`);
+    },
+    onError: (err: Error) => {
+      toast.error(err.message || "Failed to update task");
+    },
+  };
+});
