@@ -1,7 +1,6 @@
 /**
  * @hook useUserForm
- * @description Custom hook for managing UserForm state, client-side validation,
- * Jotai mutation atom subscriptions, and input field reset side effects.
+ * @description Custom hook for managing UserForm state, validation, and mutation lifecycle.
  *
  * @architectural_decision
  * Why Custom Hook over Container / Presentational Pattern?
@@ -12,55 +11,72 @@
  * 3. High Cohesion & Testability: State and mutation lifecycle can be tested independently
  *    via `renderHook()` from `@testing-library/react` and easily reused across different UI containers
  *    (e.g., modals, drawers, or inline forms).
+ *
+ * @validation
+ * Validation rules are declared once in a Zod schema and enforced by react-hook-form.
+ * Adding new fields or rules requires no new useState variables — only schema additions.
  */
 
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { useAtomValue } from "jotai";
-import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { createUserMutationAtom } from "../atoms/user-atoms";
 
+// ---------------------------------------------------------------------------
+// Validation schema — single source of truth for all username rules
+// ---------------------------------------------------------------------------
+const userFormSchema = z.object({
+  username: z
+    .string()
+    .trim()
+    .min(1, "Username is required.")
+    .max(250, "Username cannot exceed 250 characters."),
+});
+
+type UserFormValues = z.infer<typeof userFormSchema>;
+
+// ---------------------------------------------------------------------------
+// Hook
+// ---------------------------------------------------------------------------
 export function useUserForm() {
-  // Local state for username input field
-  const [username, setUsername] = useState("");
+  const {
+    register,
+    handleSubmit,
+    reset: rhfReset,
+    formState: { errors, isValid },
+  } = useForm<UserFormValues>({
+    resolver: zodResolver(userFormSchema),
+    mode: "onChange",
+    defaultValues: { username: "" },
+  });
 
   // Jotai mutation atom for user creation
-  const { mutate, isPending, isError, isSuccess, error, reset } =
+  const { mutate, isPending, isError, isSuccess, error, reset: mutationReset } =
     useAtomValue(createUserMutationAtom);
 
-  // Client-side validation logic
-  const trimmedUsername = username.trim();
-  const isOverLimit = username.length > 250;
-  const isValid = trimmedUsername.length > 0 && !isOverLimit;
-
-  // Handle text input change
-  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setUsername(e.target.value);
-    // Dismiss previous success/error message banner when user resumes typing
-    if (isError || isSuccess) reset();
-  };
-
-  // Handle form submission
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (!isValid || isPending) return;
-    mutate(trimmedUsername);
-  };
-
-  // Auto-clear input field upon successful creation
+  // Auto-clear input field and reset form state upon successful creation
   useEffect(() => {
     if (isSuccess) {
-      setUsername("");
+      rhfReset();
     }
-  }, [isSuccess]);
+  }, [isSuccess, rhfReset]);
+
+  const onSubmit = (data: UserFormValues) => {
+    if (isPending) return;
+    mutate(data.username);
+  };
 
   return {
-    username,
+    register,
+    handleSubmit: handleSubmit(onSubmit),
+    errors,
+    isValid,
     isPending,
     isError,
     isSuccess,
     error,
-    isOverLimit,
-    isValid,
-    handleInputChange,
-    handleSubmit,
+    resetMutation: mutationReset,
   };
 }

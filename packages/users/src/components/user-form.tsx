@@ -4,15 +4,15 @@ import { useUserForm } from "../hooks/use-user-form";
 
 export function UserForm() {
   const {
-    username,
+    register,
+    handleSubmit,
+    errors,
+    isValid,
     isPending,
     isError,
     isSuccess,
     error,
-    isOverLimit,
-    isValid,
-    handleInputChange,
-    handleSubmit,
+    resetMutation,
   } = useUserForm();
 
   return (
@@ -34,17 +34,18 @@ export function UserForm() {
             </Label>
             <Input
               id="username"
-              name="username"
               type="text"
-              value={username}
-              onChange={handleInputChange}
               placeholder="e.g. j_smith_dev"
               disabled={isPending}
+              {...register("username", {
+                onChange: () => {
+                  // Dismiss previous mutation status banner when user resumes typing
+                  if (isError || isSuccess) resetMutation();
+                },
+              })}
             />
-            {isOverLimit && (
-              <p className="text-xs text-destructive">
-                Username cannot exceed 250 characters. (Current: {username.length})
-              </p>
+            {errors.username && (
+              <p className="text-xs text-destructive">{errors.username.message}</p>
             )}
           </div>
 
