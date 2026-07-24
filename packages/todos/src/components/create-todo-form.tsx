@@ -1,5 +1,6 @@
 import { Button, Card, CardContent, CardHeader, CardTitle, Input, Label } from "@repo/ui";
 import { CheckCircle2 } from "lucide-react";
+import { Controller } from "react-hook-form";
 import { useCreateTodoForm, type UseCreateTodoFormOptions } from "../hooks/use-create-todo-form";
 import { UserSelectCombobox } from "./user-select-combobox";
 
@@ -12,7 +13,11 @@ export function CreateTodoForm(props: CreateTodoFormProps) {
   const { className, submitButtonText } = props;
 
   const {
-    title,
+    register,
+    control,
+    handleSubmit,
+    errors,
+    isValid,
     selectedAssigneeId,
     fixedAssigneeName,
     isAssigneeLocked,
@@ -20,10 +25,7 @@ export function CreateTodoForm(props: CreateTodoFormProps) {
     isError,
     isSuccess,
     error,
-    isValid,
-    handleTitleChange,
-    handleAssigneeChange,
-    handleSubmit,
+    resetMutation,
   } = useCreateTodoForm(props);
 
   return (
@@ -46,13 +48,18 @@ export function CreateTodoForm(props: CreateTodoFormProps) {
             </Label>
             <Input
               id="todo-title"
-              name="title"
               type="text"
-              value={title}
-              onChange={handleTitleChange}
               placeholder={isAssigneeLocked ? "e.g. Optimize SQL query" : "What needs to be done..."}
               disabled={isPending}
+              {...register("title", {
+                onChange: () => {
+                  if (isError || isSuccess) resetMutation();
+                },
+              })}
             />
+            {errors.title && (
+              <p className="text-xs text-destructive">{errors.title.message}</p>
+            )}
           </div>
 
           {/* Assignee Field */}
@@ -70,11 +77,23 @@ export function CreateTodoForm(props: CreateTodoFormProps) {
                 className="bg-slate-100 text-slate-600 cursor-not-allowed font-medium"
               />
             ) : (
-              <UserSelectCombobox
-                value={selectedAssigneeId}
-                onChange={handleAssigneeChange}
-                disabled={isPending}
+              <Controller
+                name="assigneeId"
+                control={control}
+                render={({ field }) => (
+                  <UserSelectCombobox
+                    value={field.value}
+                    onChange={(val) => {
+                      field.onChange(val);
+                      if (isError || isSuccess) resetMutation();
+                    }}
+                    disabled={isPending}
+                  />
+                )}
               />
+            )}
+            {errors.assigneeId && !isAssigneeLocked && (
+              <p className="text-xs text-destructive">{errors.assigneeId.message}</p>
             )}
           </div>
 

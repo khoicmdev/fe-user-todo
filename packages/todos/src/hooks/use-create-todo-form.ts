@@ -1,6 +1,20 @@
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { useAtomValue } from "jotai";
-import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { createTodoMutationAtom } from "../atoms/todo-mutations";
+
+export const createTodoFormSchema = z.object({
+  title: z
+    .string()
+    .trim()
+    .min(1, "Task title is required.")
+    .max(250, "Task title cannot exceed 250 characters."),
+  assigneeId: z.number().min(1, "Please select an assignee."),
+});
+
+export type CreateTodoFormValues = z.infer<typeof createTodoFormSchema>;
 
 export interface UseCreateTodoFormOptions {
   fixedAssigneeId?: number;
@@ -11,65 +25,69 @@ export interface UseCreateTodoFormOptions {
 export function useCreateTodoForm(options: UseCreateTodoFormOptions = {}) {
   const { fixedAssigneeId, fixedAssigneeName, onSuccess } = options;
 
-  const [title, setTitle] = useState("");
-  const [selectedAssigneeId, setSelectedAssigneeId] = useState<number>(
-    fixedAssigneeId || 0
-  );
+  const {
+    register,
+    control,
+    handleSubmit,
+    reset: rhfReset,
+    setValue,
+    watch,
+    formState: { errors, isValid },
+  } = useForm<CreateTodoFormValues>({
+    resolver: zodResolver(createTodoFormSchema),
+    mode: "onChange",
+    defaultValues: {
+      title: "",
+      assigneeId: fixedAssigneeId ?? 0,
+    },
+  });
 
-  const { mutate, isPending, isError, isSuccess, error, reset } =
+  const { mutate, isPending, isError, isSuccess, error, reset: mutationReset } =
     useAtomValue(createTodoMutationAtom);
 
-  // Sync selectedAssigneeId if fixedAssigneeId prop changes
+  const selectedAssigneeId = watch("assigneeId");
+  const isAssigneeLocked = Boolean(fixedAssigneeId);
+
+  // Sync fixedAssigneeId if prop changes
   useEffect(() => {
     if (typeof fixedAssigneeId === "number") {
-      setSelectedAssigneeId(fixedAssigneeId);
+      setValue("assigneeId", fixedAssigneeId, { shouldValidate: true });
     }
-  }, [fixedAssigneeId]);
+  }, [fixedAssigneeId, setValue]);
 
-  const trimmedTitle = title.trim();
-  const effectiveAssigneeId = fixedAssigneeId || selectedAssigneeId;
-  const isValid = trimmedTitle.length > 0 && effectiveAssigneeId > 0;
+  // Reset form upon successful task creation and notify callback
+  useEffect(() => {
+    if (isSuccess) {
+      rhfReset({
+        title: "",
+        assigneeId: fixedAssigneeId ?? 0,
+      });
+      onSuccess?.();
+    }
+  }, [isSuccess, rhfReset, fixedAssigneeId, onSuccess]);
 
-  const handleTitleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setTitle(e.target.value);
-    if (isError || isSuccess) reset();
-  };
+  const onSubmit = (data: CreateTodoFormValues) => {
+    if (isPending) return;
 
-  const handleAssigneeChange = (value: number) => {
-    setSelectedAssigneeId(value);
-    if (isError || isSuccess) reset();
-  };
-
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (!isValid || isPending) return;
-
-    mutate(
-      {
-        title: trimmedTitle,
-        assigneeId: effectiveAssigneeId,
-      },
-      {
-        onSuccess: () => {
-          setTitle("");
-          onSuccess?.();
-        },
-      }
-    );
+    mutate({
+      title: data.title,
+      assigneeId: fixedAssigneeId || data.assigneeId,
+    });
   };
 
   return {
-    title,
-    selectedAssigneeId: effectiveAssigneeId,
+    register,
+    control,
+    handleSubmit: handleSubmit(onSubmit),
+    errors,
+    isValid,
+    isAssigneeLocked,
     fixedAssigneeName,
-    isAssigneeLocked: Boolean(fixedAssigneeId),
+    selectedAssigneeId: fixedAssigneeId || selectedAssigneeId,
     isPending,
     isError,
     isSuccess,
     error,
-    isValid,
-    handleTitleChange,
-    handleAssigneeChange,
-    handleSubmit,
+    resetMutation: mutationReset,
   };
 }
