@@ -111,8 +111,9 @@ export function UserDetail({
       <div className="flex items-center justify-between gap-4">
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-4">
-            <h1 className="text-2xl font-bold text-slate-800 tracking-tight">User:</h1>
+            <label htmlFor="user-detail-username" className="text-2xl font-bold text-slate-800 tracking-tight cursor-pointer">User:</label>
             <Input
+              id="user-detail-username"
               {...register("username")}
               maxLength={250}
               placeholder="Enter username..."
