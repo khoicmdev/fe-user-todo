@@ -54,7 +54,25 @@ All forms use semantic HTML (`<form>`, `<button type="submit">`), accessible lab
 
 ---
 
-## 4. Quick Start Commands
+## 4. Performance Reflections & Optimization Strategies
+
+### A. Re-render Prevention
+- **Atomic State Granularity (Jotai)**: By using primitive Jotai atoms (`selectedUserIdAtom`), only components subscribing to `useAtomValue(selectedUserIdAtom)` re-render when the selected user changes. This avoids top-down tree re-renders inherent in React Context or monolithic store providers.
+- **Uncontrolled Form Fields (React Hook Form)**: Forms (`UserForm`, `CreateTodoForm`, `UserDetail`) leverage `react-hook-form` to isolate field state. Typing into inputs does not trigger parent component re-renders on every keystroke.
+- **DOM Virtualization (`@tanstack/react-virtual`)**: `UserTable` and `GlobalTodoTable` virtualize list rows using `useVirtualizer`, rendering only the elements visible in the viewport instead of hundreds of DOM nodes.
+
+### B. Query Caching & Memory Management
+- **Deduplication & Cache Invalidation**: `jotai-tanstack-query` automatically deduplicates identical data requests. When a mutation occurs (e.g. creating a todo or user), targeted query key invalidation (`queryClient.invalidateQueries`) keeps the cache fresh without manual state synchronization.
+- **Infinite Query Pagination**: Large lists (`usersInfiniteQueryAtom`, `todosInfiniteQueryAtom`) fetch data page-by-page, keeping network payloads compact and memory consumption low.
+
+### C. Code-Splitting & Bundle Optimization
+- **Route-Level Code Splitting**: TanStack Router lazy-loads feature page components (`/users`, `/todos`, `/users/$id`), reducing initial bundle sizes.
+- **Tree-Shaking**: All domain packages (`@repo/ui`, `@repo/users`, `@repo/todos`) are exported as ES modules (`"type": "module"`), allowing Vite/Rollup to drop unused icons or helper utilities during production builds.
+- **React Compiler Integration**: Configured `babel-plugin-react-compiler` automatically memoizes component props and JSX subtrees, reducing manual `useMemo`/`useCallback` maintenance.
+
+---
+
+## 5. Quick Start Commands
 
 ```bash
 npm install       # Install all monorepo workspace dependencies
@@ -62,3 +80,4 @@ npm run dev       # Launch web app (http://localhost:3000) and server (http://lo
 npm run build     # Typecheck and build all packages via Turborepo
 npm run lint      # Run ESLint across all apps and packages
 ```
+
