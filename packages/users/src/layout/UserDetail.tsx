@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from "@tanstack/react-router";
-import { useAtomValue } from "jotai";
+import { useAtomValue, useSetAtom } from "jotai";
 import { useEffect, type ReactNode } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -11,6 +11,7 @@ import {
 } from "@repo/ui";
 import { Save, X } from "lucide-react";
 import { createUserDetailQueryAtom } from "../atoms/user-queries";
+import { selectedUserIdAtom } from "../atoms/user-ui-atoms";
 
 const userDetailSchema = z.object({
   username: z
@@ -37,12 +38,19 @@ export function UserDetail({
   isSaving = false,
   onSave,
 }: UserDetailProps) {
-  const params = useParams({ from: "/users/$id" });
-  const userId = Number(params.id);
+  const params = useParams({ strict: false });
+  const userId = Number((params as Record<string, string>).id);
   const navigate = useNavigate();
+  const setSelectedUserId = useSetAtom(selectedUserIdAtom);
 
   const userQueryAtom = createUserDetailQueryAtom(userId);
   const { data: user, isLoading, error } = useAtomValue(userQueryAtom);
+
+  useEffect(() => {
+    if (Number.isFinite(userId)) {
+      setSelectedUserId(userId);
+    }
+  }, [userId, setSelectedUserId]);
 
   const {
     register,

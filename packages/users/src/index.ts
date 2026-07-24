@@ -3,3 +3,5 @@ export * from "./layout/UserDetail";
 export * from "./atoms/user-atoms";
 export * from "./atoms/user-queries";
 export * from "./atoms/user-mutations";
+export * from "./atoms/user-ui-atoms";
+

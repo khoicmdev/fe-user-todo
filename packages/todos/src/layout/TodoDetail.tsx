@@ -61,8 +61,8 @@ function AssigneeField({ assigneeId }: { assigneeId: number }) {
 // TodoDetail — main component
 // ---------------------------------------------------------------------------
 export function TodoDetail() {
-  const params = useParams({ from: "/todos/$id" });
-  const todoId = Number(params.id);
+  const params = useParams({ strict: false });
+  const todoId = Number((params as Record<string, string>).id);
   const router = useRouter();
 
   const todoQueryAtom = createTodoDetailQueryAtom(todoId);

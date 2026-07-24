@@ -1,8 +1,8 @@
 import { useRef, useEffect } from "react";
-import { useAtom } from "jotai";
+import { useAtom, useSetAtom } from "jotai";
 import { useNavigate } from "@tanstack/react-router";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { usersInfiniteQueryAtom } from "../atoms/user-atoms";
+import { usersInfiniteQueryAtom, selectedUserIdAtom } from "../atoms/user-atoms";
 import { UserTableView } from "./user-table-view";
 
 const ROW_HEIGHT = 56;
@@ -14,7 +14,13 @@ const ROW_HEIGHT = 56;
  */
 export function UserTable() {
   const navigate = useNavigate();
+  const setSelectedUserId = useSetAtom(selectedUserIdAtom);
   const [queryResult] = useAtom(usersInfiniteQueryAtom);
+
+  const handleUserClick = (userId: number) => {
+    setSelectedUserId(userId);
+    navigate({ to: "/users/$id", params: { id: String(userId) } });
+  };
   const {
     data,
     fetchNextPage,
@@ -58,10 +64,6 @@ export function UserTable() {
       fetchNextPage();
     }
   }, [virtualItems, users.length, hasNextPage, isFetchingNextPage, fetchNextPage]);
-
-  const handleUserClick = (userId: number) => {
-    navigate({ to: "/users/$id", params: { id: String(userId) } });
-  };
 
   return (
     <UserTableView
