@@ -95,10 +95,7 @@ export function UserDetail({
   };
 
   return (
-    <form
-      onSubmit={handleSubmit(onSubmit)}
-      className="w-full min-h-screen bg-slate-50 p-6 flex flex-col gap-6"
-    >
+    <div className="w-full min-h-screen bg-slate-50 p-6 flex flex-col gap-6">
       {/* Top Metadata Bar */}
       <div className="flex items-center gap-4 text-xs font-mono text-slate-500">
         <span className="px-2.5 py-1 bg-indigo-50 text-indigo-700 font-semibold rounded-md border border-indigo-100">
@@ -108,7 +105,7 @@ export function UserDetail({
       </div>
 
       {/* User Header & Edit Bar */}
-      <div className="flex items-center justify-between gap-4">
+      <form onSubmit={handleSubmit(onSubmit)} className="flex items-center justify-between gap-4">
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-4">
             <label htmlFor="user-detail-username" className="text-2xl font-bold text-slate-800 tracking-tight cursor-pointer">User:</label>
@@ -158,7 +155,7 @@ export function UserDetail({
             )}
           </Button>
         </div>
-      </div>
+      </form>
 
       {/* Main Grid: Left Slot (Add ToDo) + Right Assignments Table */}
       <div className="grid grid-cols-1 lg:grid-cols-[340px_1fr] gap-6 items-start">
@@ -180,6 +177,6 @@ export function UserDetail({
           )}
         </div>
       </div>
-    </form>
+    </div>
   );
 }

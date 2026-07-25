@@ -50,21 +50,25 @@ export function useCreateTodoForm(options: UseCreateTodoFormOptions = {}) {
 
   // Sync fixedAssigneeId if prop changes
   useEffect(() => {
-    if (typeof fixedAssigneeId === "number") {
+    if (
+      typeof fixedAssigneeId === "number" &&
+      selectedAssigneeId !== fixedAssigneeId
+    ) {
       setValue("assigneeId", fixedAssigneeId, { shouldValidate: true });
     }
-  }, [fixedAssigneeId, setValue]);
+  }, [fixedAssigneeId, selectedAssigneeId, setValue]);
 
   // Reset form upon successful task creation and notify callback
   useEffect(() => {
     if (isSuccess) {
       rhfReset({
         title: "",
-        assigneeId: fixedAssigneeId ?? 0,
+        assigneeId: fixedAssigneeId ?? selectedAssigneeId ?? 0,
       });
+      mutationReset();
       onSuccess?.();
     }
-  }, [isSuccess, rhfReset, fixedAssigneeId, onSuccess]);
+  }, [isSuccess, rhfReset, fixedAssigneeId, selectedAssigneeId, mutationReset, onSuccess]);
 
   const onSubmit = (data: CreateTodoFormValues) => {
     if (isPending) return;
