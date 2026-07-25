@@ -11,6 +11,7 @@ interface CreateTodoMutationContext {
   previousData?: InfiniteData<TodosResponse>;
   previousUserData?: InfiniteData<TodosResponse>;
   userQueryKey?: readonly [...typeof TODOS_QUERY_KEY, "user", number];
+  tempId?: number;
 }
 
 // --- Create todo mutation ---
@@ -48,8 +49,9 @@ export const createTodoMutationAtom = atomWithMutation<
       const previousUserData =
         client.getQueryData<InfiniteData<TodosResponse>>(userQueryKey);
 
+      const tempId = Date.now();
       const optimisticTodo: ToDoItem = {
-        id: Date.now(),
+        id: tempId,
         title: input.title,
         isCompleted: false,
         assigneeId: input.assigneeId,
@@ -86,7 +88,7 @@ export const createTodoMutationAtom = atomWithMutation<
         );
       }
 
-      return { previousData, previousUserData, userQueryKey };
+      return { previousData, previousUserData, userQueryKey, tempId };
     },
     onError: (err: Error, _input, context) => {
       if (context?.previousData) {
@@ -97,7 +99,39 @@ export const createTodoMutationAtom = atomWithMutation<
       }
       toast.error(err.message || "Failed to create task");
     },
-    onSuccess: (data) => {
+    onSuccess: (data, _variables, context) => {
+      // Replace optimistic item in global cache with real server response data
+      client.setQueryData<InfiniteData<TodosResponse>>(
+        TODOS_QUERY_KEY,
+        (old) => {
+          if (!old || !old.pages) return old;
+          const pages = old.pages.map((page) => ({
+            ...page,
+            data: page.data.map((todo) =>
+              todo.id === context?.tempId ? data : todo
+            ),
+          }));
+          return { ...old, pages };
+        }
+      );
+
+      // Replace optimistic item in user-scoped cache with real server response data
+      if (context?.userQueryKey) {
+        client.setQueryData<InfiniteData<TodosResponse>>(
+          context.userQueryKey,
+          (old) => {
+            if (!old || !old.pages) return old;
+            const pages = old.pages.map((page) => ({
+              ...page,
+              data: page.data.map((todo) =>
+                todo.id === context?.tempId ? data : todo
+              ),
+            }));
+            return { ...old, pages };
+          }
+        );
+      }
+
       // Invalidate both global todos and users query cache so active assignment tables update
       client.invalidateQueries({ queryKey: TODOS_QUERY_KEY });
       client.invalidateQueries({ queryKey: ["users"] });

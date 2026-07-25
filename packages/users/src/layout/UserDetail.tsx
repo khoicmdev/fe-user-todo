@@ -9,7 +9,7 @@ import {
   Input,
   Spinner,
 } from "@repo/ui";
-import { Save, X } from "lucide-react";
+import { Save, X, ArrowLeft } from "lucide-react";
 import { createUserDetailQueryAtom } from "../atoms/user-queries";
 import { selectedUserIdAtom } from "../atoms/user-ui-atoms";
 
@@ -96,12 +96,25 @@ export function UserDetail({
 
   return (
     <div className="w-full min-h-screen bg-slate-50 p-6 flex flex-col gap-6">
-      {/* Top Metadata Bar */}
-      <div className="flex items-center gap-4 text-xs font-mono text-slate-500">
-        <span className="px-2.5 py-1 bg-indigo-50 text-indigo-700 font-semibold rounded-md border border-indigo-100">
-          UID: user_0x7F{user.id}
-        </span>
-        <span>🕒 Last active: 2m ago</span>
+      {/* Top Navigation & Metadata Bar */}
+      <div className="flex items-center justify-between gap-4">
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
+          onClick={() => navigate({ to: "/users" })}
+          aria-label="Go Back"
+          className="h-8 w-8 text-slate-600 border-slate-300 hover:bg-slate-100"
+        >
+          <ArrowLeft className="w-4 h-4" />
+        </Button>
+
+        <div className="flex items-center gap-4 text-xs font-mono text-slate-500">
+          <span className="px-2.5 py-1 bg-indigo-50 text-indigo-700 font-semibold rounded-md border border-indigo-100">
+            UID: user_0x7F{user.id}
+          </span>
+          <span>🕒 Last active: 2m ago</span>
+        </div>
       </div>
 
       {/* User Header & Edit Bar */}

@@ -59,9 +59,10 @@ export function useUserForm() {
   // Auto-clear input field and reset form state upon successful creation
   useEffect(() => {
     if (isSuccess) {
-      rhfReset();
+      rhfReset({ username: "" });
+      mutationReset();
     }
-  }, [isSuccess, rhfReset]);
+  }, [isSuccess, rhfReset, mutationReset]);
 
   const onSubmit = (data: UserFormValues) => {
     if (isPending) return;

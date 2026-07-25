@@ -7,6 +7,7 @@ import { USERS_QUERY_KEY, type UsersResponse } from "./user-queries";
 
 interface MutationContext {
   previousData?: InfiniteData<UsersResponse>;
+  tempId?: number;
 }
 
 interface ServerErrorResponse {
@@ -44,8 +45,9 @@ export const createUserMutationAtom = atomWithMutation<
       const previousData =
         client.getQueryData<InfiniteData<UsersResponse>>(USERS_QUERY_KEY);
 
+      const tempId = Date.now();
       const optimisticUser: User = {
-        id: Date.now(),
+        id: tempId,
         username: newUsername,
         todoItems: [],
         createdDate: new Date().toISOString(),
@@ -65,7 +67,7 @@ export const createUserMutationAtom = atomWithMutation<
         }
       );
 
-      return { previousData };
+      return { previousData, tempId };
     },
     onError: (err: Error, _newUsername, context) => {
       if (context?.previousData) {
@@ -73,7 +75,22 @@ export const createUserMutationAtom = atomWithMutation<
       }
       toast.error(err.message || "Failed to create user");
     },
-    onSuccess: (data) => {
+    onSuccess: (data, _variables, context) => {
+      // Replace optimistic item with actual server response data
+      client.setQueryData<InfiniteData<UsersResponse>>(
+        USERS_QUERY_KEY,
+        (old) => {
+          if (!old || !old.pages) return old;
+          const pages = old.pages.map((page) => ({
+            ...page,
+            data: page.data.map((user) =>
+              user.id === context?.tempId ? data : user
+            ),
+          }));
+          return { ...old, pages };
+        }
+      );
+
       client.invalidateQueries({ queryKey: USERS_QUERY_KEY });
       toast.success(`User "${data.username}" created successfully!`);
     },

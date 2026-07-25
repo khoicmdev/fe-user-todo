@@ -64,6 +64,26 @@ function populateUser(user: User): User {
   };
 }
 
+function getNextUserId(): number {
+  let max = 0;
+  for (const u of users) {
+    if (typeof u.id === "number" && u.id > max) {
+      max = u.id;
+    }
+  }
+  return max + 1;
+}
+
+function getNextTodoId(): number {
+  let max = 100;
+  for (const t of todos) {
+    if (typeof t.id === "number" && t.id > max) {
+      max = t.id;
+    }
+  }
+  return max + 1;
+}
+
 // --- STATUS ENDPOINT ---
 
 app.get("/api/status", (req: Request, res: Response) => {
@@ -98,7 +118,7 @@ app.post("/api/users", (req: Request, res: Response) => {
 
   const { username, createdDate } = parseResult.data;
   const newUser: User = {
-    id: Date.now(),
+    id: getNextUserId(),
     username,
     createdDate: createdDate || new Date().toISOString(),
     todoItems: [],
@@ -207,7 +227,7 @@ app.post("/api/todos", (req: Request, res: Response) => {
   }
 
   const newTodo: ToDoItem = {
-    id: Date.now(),
+    id: getNextTodoId(),
     title,
     isCompleted: isCompleted ?? false,
     assigneeId,
