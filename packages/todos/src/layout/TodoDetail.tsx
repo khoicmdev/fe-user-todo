@@ -5,10 +5,10 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button, Checkbox, Input, Label, Spinner } from "@repo/ui";
-import { Save, X, User, ArrowLeft } from "lucide-react";
-import { API_BASE_URL } from "@repo/shared";
+import { ConfirmDialog, API_BASE_URL } from "@repo/shared";
+import { Save, X, User, ArrowLeft, Trash2 } from "lucide-react";
 import { createTodoDetailQueryAtom } from "../atoms/todo-queries";
-import { updateTodoMutationAtom } from "../atoms/todo-mutations";
+import { updateTodoMutationAtom, deleteTodoMutationAtom } from "../atoms/todo-mutations";
 
 // ---------------------------------------------------------------------------
 // Validation schema
@@ -65,10 +65,13 @@ export function TodoDetail() {
   const todoId = Number((params as Record<string, string>).id);
   const router = useRouter();
 
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
   const todoQueryAtom = createTodoDetailQueryAtom(todoId);
   const { data: todo, isLoading, error } = useAtomValue(todoQueryAtom);
 
   const { mutate: updateTodo, isPending: isSaving } = useAtomValue(updateTodoMutationAtom);
+  const { mutate: deleteTodo, isPending: isDeleting } = useAtomValue(deleteTodoMutationAtom);
 
   const {
     register,
@@ -115,6 +118,18 @@ export function TodoDetail() {
 
   const handleCancel = () => {
     router.history.back();
+  };
+
+  const handleDeleteConfirm = () => {
+    deleteTodo(todoId, {
+      onSuccess: () => {
+        setShowDeleteConfirm(false);
+        handleCancel();
+      },
+      onError: () => {
+        setShowDeleteConfirm(false);
+      },
+    });
   };
 
   const isCompleted = watch("isCompleted");
@@ -221,16 +236,25 @@ export function TodoDetail() {
         <div className="flex items-center justify-end gap-3 pt-2">
           <Button
             type="button"
-            variant="outline"
-            onClick={handleCancel}
-            className="gap-2 text-slate-600 border-slate-300 hover:bg-slate-50"
+            onClick={() => setShowDeleteConfirm(true)}
+            disabled={isDeleting}
+            className="gap-2 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-medium shadow-xs border border-red-700/20"
           >
-            <X className="w-4 h-4" />
-            Cancel
+            {isDeleting ? (
+              <>
+                <Spinner className="w-4 h-4" />
+                Deleting...
+              </>
+            ) : (
+              <>
+                <Trash2 className="w-4 h-4" />
+                Delete Task
+              </>
+            )}
           </Button>
           <Button
             type="submit"
-            disabled={!isDirty || !isValid || isSaving}
+            disabled={!isDirty || !isValid || isSaving || isDeleting}
             className="gap-2 bg-indigo-600 hover:bg-indigo-700 text-white"
           >
             {isSaving ? (
@@ -247,6 +271,19 @@ export function TodoDetail() {
           </Button>
         </div>
       </form>
+
+      {/* Task Deletion Confirmation Dialog */}
+      <ConfirmDialog
+        open={showDeleteConfirm}
+        onOpenChange={setShowDeleteConfirm}
+        title="Delete Task"
+        description={`Are you sure you want to delete task "${todo.title}"? This action cannot be undone.`}
+        confirmText="Delete Task"
+        cancelText="Cancel"
+        variant="destructive"
+        onConfirm={handleDeleteConfirm}
+        isLoading={isDeleting}
+      />
     </div>
   );
 }

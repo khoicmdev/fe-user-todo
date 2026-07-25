@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from "@tanstack/react-router";
 import { useAtomValue, useSetAtom } from "jotai";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -9,8 +9,10 @@ import {
   Input,
   Spinner,
 } from "@repo/ui";
-import { Save, X, ArrowLeft } from "lucide-react";
+import { ConfirmDialog } from "@repo/shared";
+import { Save, ArrowLeft, Trash2 } from "lucide-react";
 import { createUserDetailQueryAtom } from "../atoms/user-queries";
+import { deleteUserMutationAtom } from "../atoms/user-mutations";
 import { selectedUserIdAtom } from "../atoms/user-ui-atoms";
 
 const userDetailSchema = z.object({
@@ -43,8 +45,11 @@ export function UserDetail({
   const navigate = useNavigate();
   const setSelectedUserId = useSetAtom(selectedUserIdAtom);
 
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
   const userQueryAtom = createUserDetailQueryAtom(userId);
   const { data: user, isLoading, error } = useAtomValue(userQueryAtom);
+  const { mutate: deleteUser, isPending: isDeleting } = useAtomValue(deleteUserMutationAtom);
 
   useEffect(() => {
     if (Number.isFinite(userId)) {
@@ -94,6 +99,18 @@ export function UserDetail({
     onSave?.(data.username);
   };
 
+  const handleDeleteConfirm = () => {
+    deleteUser(userId, {
+      onSuccess: () => {
+        setShowDeleteConfirm(false);
+        navigate({ to: "/users" });
+      },
+      onError: () => {
+        setShowDeleteConfirm(false);
+      },
+    });
+  };
+
   return (
     <div className="w-full min-h-screen bg-slate-50 p-6 flex flex-col gap-6">
       {/* Top Navigation & Metadata Bar */}
@@ -127,9 +144,8 @@ export function UserDetail({
               {...register("username")}
               maxLength={250}
               placeholder="Enter username..."
-              className={`h-10 text-lg font-medium bg-white w-64 border-indigo-400 focus:ring-2 focus:ring-indigo-500 ${
-                errors.username ? "border-destructive focus:ring-destructive" : ""
-              }`}
+              className={`h-10 text-lg font-medium bg-white w-64 border-indigo-400 focus:ring-2 focus:ring-indigo-500 ${errors.username ? "border-destructive focus:ring-destructive" : ""
+                }`}
             />
           </div>
           {errors.username && (
@@ -143,16 +159,25 @@ export function UserDetail({
         <div className="flex items-center gap-3">
           <Button
             type="button"
-            variant="outline"
-            onClick={() => navigate({ to: "/users" })}
-            className="gap-2 text-slate-600 border-slate-300 hover:bg-slate-50"
+            onClick={() => setShowDeleteConfirm(true)}
+            disabled={isDeleting}
+            className="gap-2 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-medium shadow-xs border border-red-700/20"
           >
-            <X className="w-4 h-4" />
-            Cancel
+            {isDeleting ? (
+              <>
+                <Spinner className="w-4 h-4" />
+                Deleting...
+              </>
+            ) : (
+              <>
+                <Trash2 className="w-4 h-4" />
+                Delete User
+              </>
+            )}
           </Button>
           <Button
             type="submit"
-            disabled={!hasPendingChanges || !isValid || isSaving}
+            disabled={!hasPendingChanges || !isValid || isSaving || isDeleting}
             className="gap-2 bg-indigo-600 hover:bg-indigo-700 text-white"
           >
             {isSaving ? (
@@ -190,6 +215,19 @@ export function UserDetail({
           )}
         </div>
       </div>
+
+      {/* User Deletion Confirmation Dialog */}
+      <ConfirmDialog
+        open={showDeleteConfirm}
+        onOpenChange={setShowDeleteConfirm}
+        title="Delete User"
+        description={`Are you sure you want to delete user "${user.username}"? All associated tasks assigned to this user will also be permanently deleted. This action cannot be undone.`}
+        confirmText="Delete User"
+        cancelText="Cancel"
+        variant="destructive"
+        onConfirm={handleDeleteConfirm}
+        isLoading={isDeleting}
+      />
     </div>
   );
 }

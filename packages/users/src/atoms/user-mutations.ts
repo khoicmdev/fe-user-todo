@@ -140,3 +140,35 @@ export const updateUserMutationAtom = atomWithMutation<
     },
   };
 });
+
+// --- Delete user mutation ---
+
+export const deleteUserMutationAtom = atomWithMutation<
+  void,
+  number,
+  Error
+>((get) => {
+  const client = get(queryClientAtom);
+
+  return {
+    mutationFn: async (userId: number): Promise<void> => {
+      const res = await fetch(`${API_BASE_URL}/api/users/${userId}`, {
+        method: "DELETE",
+      });
+
+      if (!res.ok) {
+        const err = (await res.json().catch(() => ({}))) as ServerErrorResponse;
+        const generalError = typeof err?.error === "string" ? err.error : null;
+        throw new Error(generalError || "Failed to delete user");
+      }
+    },
+    onSuccess: () => {
+      client.invalidateQueries({ queryKey: USERS_QUERY_KEY });
+      client.invalidateQueries({ queryKey: ["todos"] });
+      toast.success("User and associated tasks deleted successfully");
+    },
+    onError: (err: Error) => {
+      toast.error(err.message || "Failed to delete user");
+    },
+  };
+});

@@ -182,3 +182,35 @@ export const updateTodoMutationAtom = atomWithMutation<
     },
   };
 });
+
+// --- Delete todo mutation ---
+
+export const deleteTodoMutationAtom = atomWithMutation<
+  void,
+  number,
+  Error
+>((get) => {
+  const client = get(queryClientAtom);
+
+  return {
+    mutationFn: async (todoId: number): Promise<void> => {
+      const res = await fetch(`${API_BASE_URL}/api/todos/${todoId}`, {
+        method: "DELETE",
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        const message = typeof err?.error === "string" ? err.error : "Failed to delete task";
+        throw new Error(message);
+      }
+    },
+    onSuccess: () => {
+      client.invalidateQueries({ queryKey: TODOS_QUERY_KEY });
+      client.invalidateQueries({ queryKey: ["users"] });
+      toast.success("Task deleted successfully");
+    },
+    onError: (err: Error) => {
+      toast.error(err.message || "Failed to delete task");
+    },
+  };
+});

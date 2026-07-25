@@ -168,6 +168,28 @@ app.patch("/api/users/:id", (req: Request, res: Response) => {
   res.json(populateUser(user));
 });
 
+// DELETE /api/users/:id - Delete a user and all assigned todos
+app.delete("/api/users/:id", (req: Request, res: Response) => {
+  const userId = Number(req.params.id);
+  const index = users.findIndex((u) => u.id === userId);
+
+  if (index === -1) {
+    return res.status(404).json({ error: "User not found" });
+  }
+
+  // Remove user
+  users.splice(index, 1);
+
+  // Remove all associated todos assigned to this user
+  for (let i = todos.length - 1; i >= 0; i--) {
+    if (todos[i]?.assigneeId === userId) {
+      todos.splice(i, 1);
+    }
+  }
+
+  res.status(204).send();
+});
+
 // --- TODO ENDPOINTS ---
 
 const TODO_PAGE_SIZE = 10;
