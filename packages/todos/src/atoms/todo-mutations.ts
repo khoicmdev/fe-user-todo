@@ -56,6 +56,7 @@ export const createTodoMutationAtom = atomWithMutation<
         isCompleted: false,
         assigneeId: input.assigneeId,
         createdDate: new Date().toISOString(),
+        isOptimistic: true,
       };
 
       client.setQueryData<InfiniteData<TodosResponse>>(

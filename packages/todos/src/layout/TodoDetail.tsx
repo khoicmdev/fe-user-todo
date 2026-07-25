@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button, Checkbox, Input, Label, Spinner } from "@repo/ui";
 import { ConfirmDialog, API_BASE_URL } from "@repo/shared";
-import { Save, X, User, ArrowLeft, Trash2 } from "lucide-react";
+import { Save, User, ArrowLeft, Trash2 } from "lucide-react";
 import { createTodoDetailQueryAtom } from "../atoms/todo-queries";
 import { updateTodoMutationAtom, deleteTodoMutationAtom } from "../atoms/todo-mutations";
 
@@ -136,10 +136,10 @@ export function TodoDetail() {
 
   const createdDate = todo.createdDate
     ? new Date(todo.createdDate).toLocaleDateString("en-US", {
-        month: "long",
-        day: "numeric",
-        year: "numeric",
-      })
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+    })
     : "—";
 
   // ---- Render --------------------------------------------------------------
@@ -184,9 +184,8 @@ export function TodoDetail() {
             {...register("title")}
             maxLength={250}
             placeholder="Enter task name..."
-            className={`text-lg font-medium border-slate-300 focus:ring-2 focus:ring-indigo-500 ${
-              errors.title ? "border-destructive focus:ring-destructive" : ""
-            }`}
+            className={`text-lg font-medium border-slate-300 focus:ring-2 focus:ring-indigo-500 ${errors.title ? "border-destructive focus:ring-destructive" : ""
+              }`}
           />
           {errors.title && (
             <span className="text-xs text-destructive font-medium">

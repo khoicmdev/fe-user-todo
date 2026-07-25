@@ -123,6 +123,8 @@ export function TodoTableView({
                   const todo = todos[virtualRow.index];
                   if (!todo || todo.id === undefined) return null;
 
+                  const isOptimistic = Boolean(todo.isOptimistic);
+
                   // Resolve effective completion: pending change overrides server value
                   const serverIsCompleted = todo.isCompleted ?? false;
                   const isPendingChange = todo.id in pendingChanges;
@@ -133,16 +135,22 @@ export function TodoTableView({
                   return (
                     <TableRow
                       key={todo.id}
-                      onClick={() => onRowClick?.(todo.id!)}
+                      onClick={() => !isOptimistic && onRowClick?.(todo.id!)}
                       className={`h-[56px] border-b border-slate-100 transition-colors ${
-                        onRowClick
+                        isOptimistic
+                          ? "opacity-60 cursor-not-allowed bg-slate-50/70"
+                          : onRowClick
                           ? "hover:bg-slate-100/80 cursor-pointer"
                           : "hover:bg-slate-50/60"
                       }`}
                     >
                       {/* ID */}
                       <TableCell className="w-16 px-4 font-mono text-sm text-slate-500">
-                        {todo.id}
+                        {isOptimistic ? (
+                          <Spinner className="w-3.5 h-3.5 text-amber-600" />
+                        ) : (
+                          todo.id
+                        )}
                       </TableCell>
 
                       {/* Title */}

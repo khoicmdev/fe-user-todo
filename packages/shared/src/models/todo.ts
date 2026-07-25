@@ -4,4 +4,5 @@ export interface ToDoItem {
   isCompleted?: boolean;
   assigneeId: number;
   createdDate?: string;
+  isOptimistic?: boolean;
 }

@@ -99,15 +99,29 @@ export function UserTableView({
                   if (!user) return null;
 
                   const todoCount = user.todoItems?.length ?? 0;
+                  const isOptimistic = Boolean(user.isOptimistic);
 
                   return (
                     <TableRow
                       key={user.id ?? virtualRow.index}
-                      onClick={() => user.id !== undefined && onUserClick?.(user.id)}
-                      className="h-[56px] border-b border-slate-100 hover:bg-slate-100/80 transition-colors cursor-pointer"
+                      onClick={() =>
+                        !isOptimistic && user.id !== undefined && onUserClick?.(user.id)
+                      }
+                      className={`h-[56px] border-b border-slate-100 transition-colors ${
+                        isOptimistic
+                          ? "opacity-60 cursor-not-allowed bg-slate-50/70"
+                          : "hover:bg-slate-100/80 cursor-pointer"
+                      }`}
                     >
                       <TableCell className="w-[140px] px-5 font-mono text-sm font-medium text-indigo-600">
-                        {user.id}
+                        {isOptimistic ? (
+                          <span className="inline-flex items-center gap-1.5 text-amber-600 font-sans text-xs font-semibold">
+                            <Spinner className="w-3.5 h-3.5 text-amber-600" />
+                            Creating...
+                          </span>
+                        ) : (
+                          user.id
+                        )}
                       </TableCell>
                       <TableCell className="px-5 font-mono text-sm font-semibold text-slate-800 truncate">
                         {user.username}

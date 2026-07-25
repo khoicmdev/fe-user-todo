@@ -5,4 +5,5 @@ export interface User {
   username: string;
   todoItems?: ToDoItem[];
   createdDate?: string;
+  isOptimistic?: boolean;
 }

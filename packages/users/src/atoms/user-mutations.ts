@@ -51,6 +51,7 @@ export const createUserMutationAtom = atomWithMutation<
         username: newUsername,
         todoItems: [],
         createdDate: new Date().toISOString(),
+        isOptimistic: true,
       };
 
       client.setQueryData<InfiniteData<UsersResponse>>(
