@@ -214,7 +214,7 @@ app.post("/api/todos", (req: Request, res: Response) => {
     createdDate: createdDate || new Date().toISOString(),
   };
 
-  todos.push(newTodo);
+  todos.unshift(newTodo);
   res.status(201).json(newTodo);
 });
 
