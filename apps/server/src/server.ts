@@ -2,7 +2,7 @@ import express, { type Request, type Response } from "express";
 import cors from "cors";
 import { z } from "zod";
 import type { User, ToDoItem } from "@repo/shared";
-import { initialUsers, initialTodos } from "../db/seed";
+import { initialUsers, initialTodos } from "../db/seed.js";
 
 const app = express();
 app.use(cors());
@@ -310,11 +310,15 @@ app.delete("/api/todos/:id", (req: Request, res: Response) => {
   res.status(204).send();
 });
 
-const PORT = 3001;
-app.listen(PORT, () => {
-  console.log(
-    `       \nExpressJS started at ${new Date().toLocaleDateString()} - ${new Date().toLocaleTimeString()}\n`,
-    `\nInitial with seed data at "apps/server/src/seed.ts"`,
-  );
-  console.log(`       -> Local: http://localhost:${PORT}\n`);
-});
+export default app;
+
+if (!process.env.VERCEL) {
+  const PORT = process.env.PORT || 3001;
+  app.listen(PORT, () => {
+    console.log(
+      `       \nExpressJS started at ${new Date().toLocaleDateString()} - ${new Date().toLocaleTimeString()}\n`,
+      `\nInitial with seed data at "apps/server/src/seed.ts"`,
+    );
+    console.log(`       -> Local: http://localhost:${PORT}\n`);
+  });
+}

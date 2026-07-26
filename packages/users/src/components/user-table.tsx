@@ -1,7 +1,7 @@
 import { useRef, useEffect } from "react";
 import { useAtom, useSetAtom } from "jotai";
-import { useNavigate } from "@tanstack/react-router";
 import { useVirtualizer } from "@tanstack/react-virtual";
+import { useAppNavigate } from "@repo/shared";
 import { usersInfiniteQueryAtom, selectedUserIdAtom } from "../atoms/user-atoms";
 import { UserTableView } from "./user-table-view";
 
@@ -13,7 +13,7 @@ const ROW_HEIGHT = 56;
  * and page fetching side effects, passing state down to UserTableView.
  */
 export function UserTable() {
-  const navigate = useNavigate();
+  const navigate = useAppNavigate();
   const setSelectedUserId = useSetAtom(selectedUserIdAtom);
   const [queryResult] = useAtom(usersInfiniteQueryAtom);
 

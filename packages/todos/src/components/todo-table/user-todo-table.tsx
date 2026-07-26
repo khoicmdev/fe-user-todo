@@ -1,7 +1,7 @@
 import { useRef, useEffect } from "react";
-import { useNavigate } from "@tanstack/react-router";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import type { ToDoItem } from "@repo/shared";
+import { useAppNavigate } from "@repo/shared";
 import { useTodoStatusEditContext } from "../../context/todo-status-edit-context";
 import { TodoTableView } from "./todo-table-view";
 import { ROW_HEIGHT } from "./constants";
@@ -28,7 +28,7 @@ export function UserTodoTable({
   isError,
   errorMessage,
 }: UserTodoTableProps) {
-  const navigate = useNavigate();
+  const navigate = useAppNavigate();
   const { pendingChanges, toggleTodo } = useTodoStatusEditContext();
 
   const parentRef = useRef<HTMLDivElement>(null);
