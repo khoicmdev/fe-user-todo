@@ -1,4 +1,4 @@
-import { useParams, useNavigate } from "@tanstack/react-router";
+import { useParams } from "@tanstack/react-router";
 import { useAtomValue, useSetAtom } from "jotai";
 import { useEffect, useState, type ReactNode } from "react";
 import { useForm } from "react-hook-form";
@@ -9,7 +9,7 @@ import {
   Input,
   Spinner,
 } from "@repo/ui";
-import { ConfirmDialog } from "@repo/shared";
+import { ConfirmDialog, useAppNavigate } from "@repo/shared";
 import { Save, ArrowLeft, Trash2 } from "lucide-react";
 import { createUserDetailQueryAtom } from "../atoms/user-queries";
 import { deleteUserMutationAtom } from "../atoms/user-mutations";
@@ -42,7 +42,7 @@ export function UserDetail({
 }: UserDetailProps) {
   const params = useParams({ strict: false });
   const userId = Number((params as Record<string, string>).id);
-  const navigate = useNavigate();
+  const navigate = useAppNavigate();
   const setSelectedUserId = useSetAtom(selectedUserIdAtom);
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);

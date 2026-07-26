@@ -1,15 +1,14 @@
 import { useRef, useEffect } from "react";
 import { useAtom, useAtomValue } from "jotai";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { useNavigate } from "@tanstack/react-router";
+import { useAppNavigate } from "@repo/shared";
 import { todosInfiniteQueryAtom, globalTodoUserIdFilterAtom } from "../../atoms/todo-queries";
 import { useUserSelectInfinite } from "../../hooks/use-user-select-infinite";
 import { TodoTableView } from "./todo-table-view";
 import { ROW_HEIGHT } from "./constants";
 
 export function GlobalTodoTable() {
-  const navigate = useNavigate();
-  const nav = navigate;
+  const navigate = useAppNavigate();
   const [userIdFilter, setUserIdFilter] = useAtom(globalTodoUserIdFilterAtom);
 
   const {
@@ -77,7 +76,7 @@ export function GlobalTodoTable() {
       usersMap={usersMap}
       userIdFilter={userIdFilter}
       onUserIdFilterChange={handleFilterChange}
-      onRowClick={(id) => nav({ to: "/todos/$id", params: { id: String(id) } })}
+      onRowClick={(id) => navigate({ to: "/todos/$id", params: { id: String(id) } })}
     />
   );
 }
