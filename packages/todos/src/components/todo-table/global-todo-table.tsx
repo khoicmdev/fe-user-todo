@@ -9,6 +9,7 @@ import { ROW_HEIGHT } from "./constants";
 
 export function GlobalTodoTable() {
   const navigate = useNavigate();
+  const nav = navigate;
   const [userIdFilter, setUserIdFilter] = useAtom(globalTodoUserIdFilterAtom);
 
   const {
@@ -76,7 +77,7 @@ export function GlobalTodoTable() {
       usersMap={usersMap}
       userIdFilter={userIdFilter}
       onUserIdFilterChange={handleFilterChange}
-      onRowClick={(id) => navigate({ to: "/todos/$id", params: { id: String(id) } })}
+      onRowClick={(id) => nav({ to: "/todos/$id", params: { id: String(id) } })}
     />
   );
 }

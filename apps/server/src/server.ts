@@ -310,11 +310,15 @@ app.delete("/api/todos/:id", (req: Request, res: Response) => {
   res.status(204).send();
 });
 
-const PORT = 3001;
-app.listen(PORT, () => {
-  console.log(
-    `       \nExpressJS started at ${new Date().toLocaleDateString()} - ${new Date().toLocaleTimeString()}\n`,
-    `\nInitial with seed data at "apps/server/src/seed.ts"`,
-  );
-  console.log(`       -> Local: http://localhost:${PORT}\n`);
-});
+export default app;
+
+if (!process.env.VERCEL) {
+  const PORT = process.env.PORT || 3001;
+  app.listen(PORT, () => {
+    console.log(
+      `       \nExpressJS started at ${new Date().toLocaleDateString()} - ${new Date().toLocaleTimeString()}\n`,
+      `\nInitial with seed data at "apps/server/src/seed.ts"`,
+    );
+    console.log(`       -> Local: http://localhost:${PORT}\n`);
+  });
+}
