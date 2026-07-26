@@ -2,7 +2,7 @@ import express, { type Request, type Response } from "express";
 import cors from "cors";
 import { z } from "zod";
 import type { User, ToDoItem } from "@repo/shared";
-import { initialUsers, initialTodos } from "../db/seed";
+import { initialUsers, initialTodos } from "../db/seed.js";
 
 const app = express();
 app.use(cors());
