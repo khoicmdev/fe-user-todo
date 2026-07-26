@@ -1,14 +1,16 @@
 import { useRef, useEffect } from "react";
-import { useAtomValue } from "jotai";
+import { useAtom, useAtomValue } from "jotai";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { useNavigate } from "@tanstack/react-router";
-import { todosInfiniteQueryAtom } from "../../atoms/todo-queries";
+import { todosInfiniteQueryAtom, globalTodoUserIdFilterAtom } from "../../atoms/todo-queries";
 import { useUserSelectInfinite } from "../../hooks/use-user-select-infinite";
 import { TodoTableView } from "./todo-table-view";
 import { ROW_HEIGHT } from "./constants";
 
 export function GlobalTodoTable() {
   const navigate = useNavigate();
+  const [userIdFilter, setUserIdFilter] = useAtom(globalTodoUserIdFilterAtom);
+
   const {
     data,
     fetchNextPage,
@@ -43,6 +45,13 @@ export function GlobalTodoTable() {
       ? rowVirtualizer.getTotalSize() - virtualItems[virtualItems.length - 1].end
       : 0;
 
+  const handleFilterChange = (id: number | undefined) => {
+    setUserIdFilter(id);
+    if (parentRef.current) {
+      parentRef.current.scrollTo({ top: 0 });
+    }
+  };
+
   useEffect(() => {
     const lastItem = virtualItems[virtualItems.length - 1];
     if (!lastItem) return;
@@ -65,6 +74,8 @@ export function GlobalTodoTable() {
       errorMessage={error?.message}
       isFetchingNextPage={isFetchingNextPage}
       usersMap={usersMap}
+      userIdFilter={userIdFilter}
+      onUserIdFilterChange={handleFilterChange}
       onRowClick={(id) => navigate({ to: "/todos/$id", params: { id: String(id) } })}
     />
   );

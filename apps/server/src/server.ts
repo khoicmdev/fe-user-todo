@@ -199,8 +199,13 @@ app.get("/api/todos", (req: Request, res: Response) => {
   const pageIndex = Math.max(1, Number(req.query.pageIndex) || 1);
   const userIdQuery = req.query.userId || req.query.assigneeId;
 
-  const filtered = userIdQuery
-    ? todos.filter((t) => t.assigneeId === Number(userIdQuery))
+  const targetUserId =
+    userIdQuery && userIdQuery !== "all" && userIdQuery !== "undefined"
+      ? Number(userIdQuery)
+      : NaN;
+
+  const filtered = !isNaN(targetUserId)
+    ? todos.filter((t) => t.assigneeId === targetUserId)
     : todos;
 
   const startIndex = (pageIndex - 1) * TODO_PAGE_SIZE;

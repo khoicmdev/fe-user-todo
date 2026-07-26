@@ -16,9 +16,11 @@ import { useUserSelectInfinite } from "../hooks/use-user-select-infinite";
 
 export interface UserSelectComboboxProps {
   value?: number;
-  onChange: (value: number) => void;
+  onChange: (value: number | undefined) => void;
   disabled?: boolean;
   className?: string;
+  placeholder?: string;
+  allowClear?: boolean;
 }
 
 export function UserSelectCombobox({
@@ -26,6 +28,8 @@ export function UserSelectCombobox({
   onChange,
   disabled = false,
   className,
+  placeholder,
+  allowClear = false,
 }: UserSelectComboboxProps) {
   const [open, setOpen] = useState(false);
   const {
@@ -63,11 +67,11 @@ export function UserSelectCombobox({
           {isLoading ? (
             <span className="text-slate-400">Loading users...</span>
           ) : selectedUser ? (
-            <span>
+            <span className="truncate">
               {selectedUser.username} <span className="text-slate-400 text-xs">(ID: {selectedUser.id})</span>
             </span>
           ) : (
-            <span className="text-slate-400">Select an assignee...</span>
+            <span className="text-slate-400 font-normal">{placeholder || "Select an assignee..."}</span>
           )}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
@@ -78,6 +82,23 @@ export function UserSelectCombobox({
           <CommandList onScroll={handleScroll} className="max-h-[220px]">
             <CommandEmpty>No user found.</CommandEmpty>
             <CommandGroup>
+              {allowClear && (
+                <CommandItem
+                  key="all-users"
+                  value="all users clear filter"
+                  onSelect={() => {
+                    onChange(undefined);
+                    setOpen(false);
+                  }}
+                >
+                  <Check
+                    className={`mr-2 h-4 w-4 ${
+                      value === undefined ? "opacity-100 text-indigo-600" : "opacity-0"
+                    }`}
+                  />
+                  <span className="font-medium text-slate-700">All users</span>
+                </CommandItem>
+              )}
               {users.map((user) => {
                 if (typeof user.id !== "number") return null;
                 const isSelected = value === user.id;
@@ -94,8 +115,9 @@ export function UserSelectCombobox({
                     }}
                   >
                     <Check
-                      className={`mr-2 h-4 w-4 ${isSelected ? "opacity-100 text-indigo-600" : "opacity-0"
-                        }`}
+                      className={`mr-2 h-4 w-4 ${
+                        isSelected ? "opacity-100 text-indigo-600" : "opacity-0"
+                      }`}
                     />
                     <div className="flex items-center justify-between w-full">
                       <span className="font-medium text-slate-800">{user.username}</span>

@@ -15,6 +15,7 @@ import {
   Spinner,
   Checkbox,
 } from "@repo/ui";
+import { UserSelectCombobox } from "../user-select-combobox";
 import { StatusBadge } from "./status-badge";
 import { COL_SPAN } from "./constants";
 
@@ -32,6 +33,8 @@ export interface TodoTableViewProps {
   isFetchingNextPage: boolean;
   // Global mode only
   usersMap?: Map<number, string>;
+  userIdFilter?: number;
+  onUserIdFilterChange?: (userId: number | undefined) => void;
   // User mode only
   pendingChanges?: Record<number, boolean>;
   onToggle?: (id: number, serverIsCompleted: boolean) => void;
@@ -51,6 +54,8 @@ export function TodoTableView({
   errorMessage,
   isFetchingNextPage,
   usersMap,
+  userIdFilter,
+  onUserIdFilterChange,
   pendingChanges = {},
   onToggle,
   onRowClick,
@@ -60,13 +65,25 @@ export function TodoTableView({
   return (
     <Card className="w-full border-border/80 shadow-sm overflow-hidden py-0 gap-0">
       {/* Card Header */}
-      <CardHeader className="bg-slate-50/80 border-b border-border/60 px-5 py-4 flex flex-row items-center justify-between space-y-0">
-        <CardTitle className="text-base font-semibold text-slate-800 tracking-tight">
+      <CardHeader className="bg-slate-50/80 border-b border-border/60 px-5 py-4 flex flex-row items-center justify-between space-y-0 gap-4">
+        <CardTitle className="text-base font-semibold text-slate-800 tracking-tight shrink-0">
           {mode === "global" ? "Active Task Registry" : "Active Assignments"}
         </CardTitle>
-        <span className="text-xs font-mono text-muted-foreground bg-slate-100 px-2.5 py-1 rounded-full border border-slate-200">
-          Total: {total}
-        </span>
+        <div className="flex items-center gap-3">
+          {mode === "global" && onUserIdFilterChange && (
+            <div className="w-52 sm:w-60">
+              <UserSelectCombobox
+                value={userIdFilter}
+                onChange={onUserIdFilterChange}
+                placeholder="Filter by user..."
+                allowClear
+              />
+            </div>
+          )}
+          <span className="text-xs font-mono text-muted-foreground bg-slate-100 px-2.5 py-1 rounded-full border border-slate-200 shrink-0">
+            Total: {total}
+          </span>
+        </div>
       </CardHeader>
 
       {/* Virtualized Table */}
